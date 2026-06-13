@@ -42,6 +42,24 @@ button{cursor:pointer;border:none;background:none;}
 
 .content{padding:16px 20px 0;}
 .card{background:var(--card);border-radius:20px;padding:20px;margin-bottom:12px;border:1px solid var(--border);}
+
+/* Date strip */
+.date-strip-wrap{padding:14px 20px 0;}
+.date-strip-wrap .date-strip{margin-bottom:0;}
+.date-strip{display:flex;gap:7px;margin-bottom:14px;align-items:stretch;}
+.date-chip{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 2px;border-radius:14px;background:var(--card2);border:1px solid var(--borderlit);transition:all .15s;min-width:0;}
+.date-dow{font-size:10px;color:var(--muted);font-weight:600;}
+.date-md{font-size:14px;font-weight:800;color:var(--text);}
+.date-chip.sel{background:var(--card);border-color:var(--borderlit);}
+.date-chip.today{border-color:var(--amber);}
+.date-chip.today.sel{background:var(--amber);}
+.date-chip.today.sel .date-dow{color:#0B1120cc;}
+.date-chip.today.sel .date-md{color:#0B1120;}
+.date-chip.sel:not(.today){background:#60A5FA22;border-color:#60A5FA88;}
+.date-chip.sel:not(.today) .date-md{color:var(--blue);}
+.date-cal{display:flex;align-items:center;justify-content:center;padding:0 14px;border-radius:14px;background:var(--card2);border:1px solid var(--borderlit);transition:all .15s;}
+.date-cal:active{background:var(--card3);}
+.edit-banner{background:#F5A62318;border:1px solid #F5A62344;border-radius:12px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:14px;text-align:center;}
 .card-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
 
 /* SUCCESS HERO (NEW - top priority) */
@@ -219,6 +237,9 @@ button{cursor:pointer;border:none;background:none;}
     </div>
   </div>
 
+  <!-- DATE STRIP (right under title) -->
+  <div class="date-strip-wrap" id="date-strip-wrap"></div>
+
   <!-- SUCCESS HERO (top priority now) -->
   <div class="success-hero" id="success-hero">
     <div class="sh-top">
@@ -276,6 +297,24 @@ function todayStr(){return new Date().toISOString().split("T")[0];}
 function fmtDate(s){const d=new Date(s+"T00:00:00");return `${d.getMonth()+1}/${d.getDate()}`;}
 function daysSince(s){return Math.floor((Date.now()-new Date(s+"T00:00:00"))/86400000)+1;}
 
+function completeToday(){
+  showToast("✅ 오늘 기록이 저장됐습니다!");
+  refreshAutoLine();
+}
+
+function editPastLog(dateStr){
+  // switch to a past date entry mode
+  state._editDate=dateStr;
+  saveState();
+  renderContent();
+}
+function clearEditDate(){
+  delete state._editDate;
+  saveState();
+  renderContent();
+}
+function getActiveDate(){return state._editDate||todayStr();}
+function getActiveLog(){const t=getActiveDate();return state.logs.find(l=>l.date===t)||{date:t,weight:"",lateNight:false,delivery:false,sugar:false,cardio:"",cardioType:"",intensity:"",strength:false,mood:"",note:""};} 
 function getStreak(logs){let n=0,d=new Date();while(true){const s=d.toISOString().split("T")[0];const l=logs.find(x=>x.date===s);if(!l)break;if(l.lateNight||l.delivery||l.sugar)break;n++;d.setDate(d.getDate()-1);}return n;}
 function getTotals(logs){
   let nights=0,deliveries=0,snacks=0,workouts=0,cleanDays=0;
@@ -291,6 +330,8 @@ function getTotals(logs){
 function getTodayLog(){const t=todayStr();return state.logs.find(l=>l.date===t)||{date:t,weight:"",lateNight:false,delivery:false,sugar:false,cardio:"",cardioType:"",intensity:"",strength:false,mood:"",note:""};}
 function updateLog(fields){const t=todayStr();const tl=getTodayLog();state.logs=state.logs.filter(l=>l.date!==t);state.logs.push({...tl,...fields});saveState();renderHeader();renderContent();}
 function updateLogSilent(fields){const t=todayStr();const tl=getTodayLog();state.logs=state.logs.filter(l=>l.date!==t);state.logs.push({...tl,...fields});saveState();}
+function updateLogForDate(dt,fields){const tl=state.logs.find(l=>l.date===dt)||{date:dt,weight:"",lateNight:false,delivery:false,sugar:false,cardio:"",cardioType:"",intensity:"",strength:false,mood:"",note:""};state.logs=state.logs.filter(l=>l.date!==dt);state.logs.push({...tl,...fields});saveState();renderHeader();renderContent();}
+function updateLogSilentForDate(dt,fields){const tl=state.logs.find(l=>l.date===dt)||{date:dt,weight:"",lateNight:false,delivery:false,sugar:false,cardio:"",cardioType:"",intensity:"",strength:false,mood:"",note:""};state.logs=state.logs.filter(l=>l.date!==dt);state.logs.push({...tl,...fields});saveState();}
 function updateAlarm(id,fields){state.alarms=state.alarms.map(a=>a.id===id?{...a,...fields}:a);saveState();renderContent();}
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}
 
@@ -362,6 +403,31 @@ function renderHeader(){
   document.getElementById("pm-pct").textContent=pct.toFixed(1)+"% 회수";
   renderSuccessHero();
   renderTotals();
+  renderDateStrip();
+}
+
+function renderDateStrip(){
+  const el=document.getElementById("date-strip-wrap");
+  if(!el)return;
+  if(currentTab!=="home"){el.style.display="none";return;}
+  el.style.display="block";
+  const activeDate=getActiveDate();
+  const isToday=activeDate===todayStr();
+  const dateOptions=[];
+  for(let i=4;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dateOptions.push(d.toISOString().split("T")[0]);}
+  const chips=dateOptions.map(dt=>{
+    const d=new Date(dt+"T00:00:00");
+    const dow=["일","월","화","수","목","금","토"][d.getDay()];
+    const lbl=`${d.getMonth()+1}/${d.getDate()}`;
+    const sel=dt===activeDate;
+    const isT=dt===todayStr();
+    return `<button class="date-chip ${sel?"sel":""} ${isT?"today":""}" onclick="${isT?"clearEditDate()":"editPastLog('"+dt+"')"}"><span class="date-dow">${dow}</span><span class="date-md">${lbl}</span></button>`;
+  }).join("");
+  const banner=!isToday?`<div class="edit-banner">✏️ ${(()=>{const d=new Date(activeDate+"T00:00:00");return `${d.getMonth()+1}월 ${d.getDate()}일`;})()} 기록 수정 중 · <button onclick="clearEditDate()" style="color:var(--amber);text-decoration:underline;font-weight:700;">오늘로</button></div>`:"";
+  el.innerHTML=`<div class="date-strip">${chips}
+    <button class="date-cal" onclick="var i=document.getElementById('dateCalInput');i.showPicker?i.showPicker():i.click()"><span style="font-size:18px;">📅</span></button>
+    <input type="date" id="dateCalInput" max="${todayStr()}" value="${activeDate}" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" onchange="if(this.value){this.value===todayStr()?clearEditDate():editPastLog(this.value);}"/>
+  </div>${banner}`;
 }
 
 function renderTotals(){
@@ -415,6 +481,7 @@ function switchTab(tab){
   if(sh)sh.style.display=homeOnly?"block":"none";
   if(pm)pm.style.display=homeOnly?"block":"none";
   renderTotals();
+  renderDateStrip();
   renderContent();
 }
 function renderContent(){
@@ -428,7 +495,9 @@ function renderContent(){
 }
 
 function renderHome(){
-  const tl=getTodayLog();
+  const tl=getActiveLog();
+  const activeDate=getActiveDate();
+  const isToday=activeDate===todayStr();
   const logs=[...state.logs].filter(l=>l.weight).sort((a,b)=>b.date.localeCompare(a.date));
   const prevW=logs.length>1?logs[1].weight:null;
   const diffHtml=tl.weight&&prevW&&tl.weight<prevW?`<span class="weight-diff">▼ ${(prevW-tl.weight).toFixed(1)}kg</span>`:"";
@@ -443,22 +512,18 @@ function renderHome(){
     <div class="habit-group">
       <div class="habit-name">${h.label}</div>
       <div class="chip-row">
-        <button class="chip ${tl[h.k]===false?"on-mint":""}" onclick="updateLog({'${h.k}':false});showToast('💪 잘 회수했습니다!')">${h.okLabel} ✓</button>
-        <button class="chip ${tl[h.k]===true?h.offCls:""}" onclick="updateLog({'${h.k}':true})">${h.badLabel}</button>
+        <button class="chip ${tl[h.k]===false?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{'${h.k}':false});showToast('💪 잘 회수했습니다!')">${h.okLabel} ✓</button>
+        <button class="chip ${tl[h.k]===true?h.offCls:""}" onclick="updateLogForDate('${activeDate}',{'${h.k}':true})">${h.badLabel}</button>
       </div>
     </div>`).join("");
 
-  // cardio time
   const cardioVals=["0","20","30","40","60"];
-  const cardioHtml=cardioVals.map(v=>`<button class="ex-chip ${tl.cardio===v?"on":""}" onclick="updateLog({cardio:'${v}'})">${v==="0"?"쉼":v+"분"}</button>`).join("");
-  // cardio type
+  const cardioHtml=cardioVals.map(v=>`<button class="ex-chip ${tl.cardio===v?"on":""}" onclick="updateLogForDate('${activeDate}',{cardio:'${v}'})">${v==="0"?"쉼":v+"분"}</button>`).join("");
   const cardioTypes=["실내자전거","암바이크","수영","걷기","기타"];
-  const typeHtml=cardioTypes.map(t=>`<button class="ex-chip ${tl.cardioType===t?"on-blue":""}" onclick="updateLog({cardioType:'${t}'})">${t}</button>`).join("");
-  // intensity
+  const typeHtml=cardioTypes.map(t=>`<button class="ex-chip ${tl.cardioType===t?"on-blue":""}" onclick="updateLogForDate('${activeDate}',{cardioType:'${t}'})">${t}</button>`).join("");
   const intensities=["가볍게","보통","강하게"];
-  const intHtml=intensities.map(i=>`<button class="ex-chip ${tl.intensity===i?"on-mint":""}" onclick="updateLog({intensity:'${i}'})">${i}</button>`).join("");
+  const intHtml=intensities.map(i=>`<button class="ex-chip ${tl.intensity===i?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{intensity:'${i}'})">${i}</button>`).join("");
 
-  // mood
   const moods=[
     {k:"great",emoji:"😄",lbl:"아주 좋음",col:"#2DD4A0"},
     {k:"good",emoji:"🙂",lbl:"좋음",col:"#60A5FA"},
@@ -466,23 +531,23 @@ function renderHome(){
     {k:"down",emoji:"😔",lbl:"우울",col:"#A78BFA"},
     {k:"stress",emoji:"😣",lbl:"스트레스",col:"#F87171"},
   ];
-  const moodHtml=`<div class="mood-row">${moods.map(m=>`<button class="mood-chip ${tl.mood===m.k?"sel":""}" style="${tl.mood===m.k?`background:${m.col}22;border-color:${m.col};`:""}" onclick="updateLog({mood:'${m.k}'})"><span class="mood-emoji">${m.emoji}</span><span class="mood-lbl" style="${tl.mood===m.k?`color:${m.col};`:""}">${m.lbl}</span></button>`).join("")}</div>`;
+  const moodHtml=`<div class="mood-row">${moods.map(m=>`<button class="mood-chip ${tl.mood===m.k?"sel":""}" style="${tl.mood===m.k?`background:${m.col}22;border-color:${m.col};`:""}" onclick="updateLogForDate('${activeDate}',{mood:'${m.k}'})"><span class="mood-emoji">${m.emoji}</span><span class="mood-lbl" style="${tl.mood===m.k?`color:${m.col};`:""}">${m.lbl}</span></button>`).join("")}</div>`;
 
   return `
     <div class="card">
-      <div class="card-label">⚖️ 오늘 체중</div>
+      <div class="card-label">⚖️ 체중</div>
       <div class="weight-row">
-        <input class="weight-input" type="number" step="0.1" min="30" max="300" value="${tl.weight||""}" placeholder="–" oninput="updateLogSilent({weight:parseFloat(this.value)||''});renderHeader();" onblur="renderContent();"/>
+        <input class="weight-input" type="number" step="0.1" min="30" max="300" value="${tl.weight||""}" placeholder="–" oninput="updateLogSilentForDate('${activeDate}',{weight:parseFloat(this.value)||''});renderHeader();" onblur="renderContent();"/>
         <span class="weight-unit">kg</span>${diffHtml}
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center;">하루 숫자보다 7일 추세를 봅니다</div>
     </div>
     <div class="card">
-      <div class="card-label">🪞 오늘 회수 체크</div>
+      <div class="card-label">🪞 회수 체크</div>
       ${habitHtml}
     </div>
     <div class="card">
-      <div class="card-label">🏃 오늘 운동</div>
+      <div class="card-label">🏃 운동</div>
       <div class="ex-label">유산소 시간</div>
       <div class="ex-row">${cardioHtml}</div>
       <div class="ex-label">운동 종류</div>
@@ -491,15 +556,16 @@ function renderHome(){
       <div class="ex-row" style="margin-bottom:14px;">${intHtml}</div>
       <div class="ex-label">근력 운동</div>
       <div class="chip-row">
-        <button class="chip ${!tl.strength?"on-mint":""}" onclick="updateLog({strength:false})">안함</button>
-        <button class="chip ${tl.strength?"on-mint":""}" onclick="updateLog({strength:true})">했다 ✓</button>
+        <button class="chip ${!tl.strength?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{strength:false})">안함</button>
+        <button class="chip ${tl.strength?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{strength:true})">했다 ✓</button>
       </div>
     </div>
     <div class="card">
-      <div class="card-label">💭 오늘 기분</div>
+      <div class="card-label">💭 기분 · 일기</div>
       ${moodHtml}
-      <textarea class="note-ta" placeholder="오늘 하루 어땠나요? 무엇 때문에 그런 기분이 들었는지 적어보세요..." oninput="updateLogSilent({note:this.value})">${tl.note||""}</textarea>
+      <textarea class="note-ta" placeholder="오늘 하루 어땠나요? 무엇 때문에 그런 기분이 들었는지 적어보세요..." oninput="updateLogSilentForDate('${activeDate}',{note:this.value})">${tl.note||""}</textarea>
     </div>
+    <button onclick="completeToday()" style="width:100%;padding:18px;background:linear-gradient(135deg,#2DD4A0,#1aab7f);color:#0B1120;font-size:16px;font-weight:900;border-radius:18px;margin-bottom:12px;letter-spacing:0.5px;">✅ 기록 완료</button>
     <div id="ai-auto"></div>`;
 }
 
