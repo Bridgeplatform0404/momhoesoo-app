@@ -168,6 +168,21 @@ button{cursor:pointer;border:none;background:none;}
 .stat-bar-bg{height:8px;background:var(--card3);border-radius:99px;overflow:hidden;}
 .stat-bar-fill{height:100%;border-radius:99px;transition:width .8s ease;}
 
+/* Calendar ring view */
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px;}
+.cal-dow{text-align:center;font-size:10px;color:var(--muted);font-weight:600;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-cell{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;}
+.cal-cell.empty{visibility:hidden;}
+.cal-ring{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.cal-ring svg{width:100%;height:100%;max-width:42px;max-height:42px;}
+.cal-num{position:relative;font-size:12px;font-weight:700;color:var(--text);z-index:1;}
+.cal-num.future{color:#3a4258;}
+.cal-cell.today .cal-num{color:var(--amber);font-weight:900;}
+.cal-legend{display:flex;justify-content:center;gap:14px;margin-top:14px;flex-wrap:wrap;}
+.cal-legend span{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.cal-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
 /* Log */
 .log-item{background:var(--card);border-radius:20px;padding:18px 20px;margin-bottom:12px;border-left:3px solid var(--mint);}
 .log-item.bad{border-left-color:var(--amber);}
@@ -179,6 +194,11 @@ button{cursor:pointer;border:none;background:none;}
 .alarm-item{background:var(--card);border-radius:20px;padding:16px 20px;margin-bottom:12px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;}
 .alarm-time{background:var(--card2);border:1px solid var(--borderlit);border-radius:10px;color:var(--text);font-size:18px;font-weight:700;padding:8px 12px;outline:none;}
 .alarm-label{flex:1;font-size:13px;}
+.alarm-label-input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--borderlit);border-radius:10px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;}
+.alarm-label-input:focus{border-color:var(--amber);}
+.alarm-del{padding:7px 10px;font-size:13px;border-radius:10px;border:1px solid var(--borderlit);background:var(--card2);color:var(--muted);flex-shrink:0;}
+.alarm-del:active{background:#F8717122;color:var(--red);}
+.alarm-add{width:100%;padding:14px;background:var(--card2);border:1.5px dashed var(--borderlit);border-radius:16px;color:var(--amber);font-size:14px;font-weight:600;}
 .alarm-toggle{padding:7px 16px;font-size:12px;font-weight:700;border-radius:10px;border:1px solid var(--borderlit);background:var(--card2);color:var(--muted);}
 .alarm-toggle.on{background:#2DD4A022;color:var(--mint);border-color:var(--mint);}
 
@@ -667,7 +687,51 @@ function renderChart(){
     </div>`;
   }).join("");
 
-  return `<div class="card">
+  // monthly calendar ring view (achievement-based, behavior checks)
+  const now=new Date();
+  const yr=now.getFullYear(), mo=now.getMonth();
+  const firstDay=new Date(yr,mo,1);
+  const startOffset=(firstDay.getDay()+6)%7; // Mon=0
+  const daysInMonth=new Date(yr,mo+1,0).getDate();
+  const todayStrV=todayStr();
+  const dayCells=[];
+  for(let i=0;i<startOffset;i++)dayCells.push(`<div class="cal-cell empty"></div>`);
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const log=state.logs.find(l=>l.date===ds);
+    let done=0;
+    if(log){
+      if(log.lateNight===false)done++;
+      if(log.delivery===false)done++;
+      if(log.sugar===false)done++;
+      if((log.cardio&&log.cardio!=="0")||log.strength)done++;
+    }
+    const pct=done/4;
+    const C=88;
+    const isT=ds===todayStrV;
+    const isFuture=ds>todayStrV;
+    const ringColor=done===4?"#2DD4A0":done>0?"#F5A623":"#2a3344";
+    const ring=isFuture?"":`<svg width="100%" height="100%" viewBox="0 0 38 38"><circle cx="19" cy="19" r="14" fill="none" stroke="#1c2536" stroke-width="3.2"/>${log?`<circle cx="19" cy="19" r="14" fill="none" stroke="${ringColor}" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}" transform="rotate(-90 19 19)"/>`:""}</svg>`;
+    dayCells.push(`<div class="cal-cell ${isT?"today":""}">
+      <div class="cal-ring">${ring}</div>
+      <div class="cal-num ${isFuture?"future":""}">${d}</div>
+    </div>`);
+  }
+  const monthName=`${yr}년 ${mo+1}월`;
+  const dows=["월","화","수","목","금","토","일"];
+  const calendarCard=`<div class="card">
+    <div class="card-label">📅 ${monthName} 회수 달력</div>
+    <div class="cal-dow-row">${dows.map(w=>`<div class="cal-dow">${w}</div>`).join("")}</div>
+    <div class="cal-grid">${dayCells.join("")}</div>
+    <div class="cal-legend">
+      <span><span class="cal-dot" style="background:#2DD4A0;"></span>완전 회수</span>
+      <span><span class="cal-dot" style="background:#F5A623;"></span>일부 달성</span>
+      <span><span class="cal-dot" style="background:#2a3344;"></span>미기록</span>
+    </div>
+  </div>`;
+
+  return `${calendarCard}
+  <div class="card">
     <div class="card-label">📈 체중 추세</div>${svgHtml}
     <div class="chart-meta">
       <div class="chart-row"><span style="color:var(--muted);">오늘 체중</span><span style="font-weight:700;">${latestW||"–"} kg</span></div>
@@ -782,10 +846,20 @@ function renderFriends(){
 }
 
 function renderAlarm(){
-  const items=state.alarms.map(a=>`<div class="alarm-item"><input class="alarm-time" type="time" value="${a.time}" onchange="updateAlarm(${a.id},{time:this.value})"/><span class="alarm-label">${a.label}</span><button class="alarm-toggle ${a.enabled?"on":""}" onclick="toggleAlarm(${a.id})">${a.enabled?"ON":"OFF"}</button></div>`).join("");
-  return `<div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">행동 시간에 맞춘 알람입니다. 시간을 조정하고 ON/OFF 하세요.</div>${items}<div style="background:#12122a;border:1px solid #2a2a5a;border-radius:20px;padding:16px 20px;"><div style="font-size:12px;color:#8888cc;line-height:1.6;">💡 이 화면을 열어둔 상태에서만 알람이 작동합니다.</div></div>`;
+  const items=state.alarms.map(a=>`<div class="alarm-item">
+    <input class="alarm-time" type="time" value="${a.time}" onchange="updateAlarm(${a.id},{time:this.value})"/>
+    <input class="alarm-label-input" type="text" value="${(a.label||"").replace(/"/g,"&quot;")}" placeholder="알람 이름" onchange="updateAlarm(${a.id},{label:this.value})"/>
+    <button class="alarm-toggle ${a.enabled?"on":""}" onclick="toggleAlarm(${a.id})">${a.enabled?"ON":"OFF"}</button>
+    <button class="alarm-del" onclick="deleteAlarm(${a.id})">✕</button>
+  </div>`).join("");
+  return `<div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">알람 이름과 시간을 직접 수정하세요. 가장 어려운 시간대에 나만의 응원을 설정할 수 있습니다.</div>
+    ${items}
+    <button class="alarm-add" onclick="addAlarm()">+ 알람 추가</button>
+    <div style="background:#12122a;border:1px solid #2a2a5a;border-radius:20px;padding:16px 20px;margin-top:12px;"><div style="font-size:12px;color:#8888cc;line-height:1.6;">💡 이 화면을 열어둔 상태에서만 알람이 작동합니다. 정식 앱에서는 백그라운드 알림이 가능합니다.</div></div>`;
 }
 function toggleAlarm(id){const a=state.alarms.find(x=>x.id===id);if(!a.enabled&&"Notification" in window)Notification.requestPermission();updateAlarm(id,{enabled:!a.enabled});}
+function addAlarm(){const newId=Math.max(0,...state.alarms.map(a=>a.id))+1;state.alarms.push({id:newId,label:"새 알람",time:"21:00",enabled:true});saveState();renderContent();}
+function deleteAlarm(id){state.alarms=state.alarms.filter(a=>a.id!==id);saveState();renderContent();}
 
 async function doTip(){
   tipLoading=true;tipData=null;renderContent();
