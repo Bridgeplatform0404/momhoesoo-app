@@ -519,7 +519,7 @@ function renderHome(){
 
   const cardioVals=["0","20","30","40","60"];
   const cardioHtml=cardioVals.map(v=>`<button class="ex-chip ${tl.cardio===v?"on":""}" onclick="updateLogForDate('${activeDate}',{cardio:'${v}'})">${v==="0"?"쉼":v+"분"}</button>`).join("");
-  const cardioTypes=["실내자전거","암바이크","수영","걷기","기타"];
+  const cardioTypes=["걷기","러닝","실내자전거","실외자전거","기타"];
   const typeHtml=cardioTypes.map(t=>`<button class="ex-chip ${tl.cardioType===t?"on-blue":""}" onclick="updateLogForDate('${activeDate}',{cardioType:'${t}'})">${t}</button>`).join("");
   const intensities=["가볍게","보통","강하게"];
   const intHtml=intensities.map(i=>`<button class="ex-chip ${tl.intensity===i?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{intensity:'${i}'})">${i}</button>`).join("");
