@@ -9,1089 +9,698 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
-  /* Surfaces — navy identity kept, softened & warmed slightly */
-  --bg:#0E1522;--surface:#161F2E;--surface-elevated:#1C2738;--surface-soft:#222E40;
-  /* Legacy aliases so existing var() usages keep working */
-  --card:#161F2E;--card2:#1C2738;--card3:#222E40;
-  /* Text */
-  --text-primary:#F5F7FA;--text-secondary:#A7B0BE;--text-muted:#707B8D;
-  --text:#F5F7FA;--muted:#8C97A7;
-  /* Accent (mint) = 완료·실행·긍정 only */
-  --accent:#43D6A5;--accent-strong:#28C995;--accent-soft:rgba(67,214,165,0.12);
-  --mint:#43D6A5;
-  /* Warm (orange) = 현재 날짜·부분 완료·주의 only */
-  --warm:#F5AA3C;--warm-soft:rgba(245,170,60,0.12);
-  --amber:#F5AA3C;
-  /* De-emphasized legacy colors (kept defined to avoid breakage; reduced in later step) */
-  --blue:#75A7FF;--purple:#A78BFA;--red:#FF6F78;
-  /* Borders / dividers — soft translucent */
-  --border:rgba(255,255,255,0.075);--borderlit:rgba(255,255,255,0.14);--divider:rgba(255,255,255,0.055);
-  /* Radius scale by role */
-  --radius-sm:10px;--radius-md:14px;--radius-lg:18px;--radius-xl:24px;--radius-pill:999px;
-  --r-lg:18px;--r-md:14px;--r-sm:10px;
-  /* Spacing (8px system) */
-  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;
-  /* Type scale */
-  --font-display:30px;--font-page-title:25px;--font-section-title:19px;--font-body:16px;--font-small:14px;--font-caption:12px;
-  /* Shadow — used on ONE hero area only */
-  --shadow-hero:0 8px 24px rgba(0,0,0,0.16);--shadow-card:none;--shadow-soft:none;
-  --ease:cubic-bezier(.4,0,.2,1);
+  --bg:#0A0E16;--surface:#121826;--surface-up:#1A2233;--surface-hi:#222C40;
+  --line:rgba(255,255,255,0.06);--line-hi:rgba(255,255,255,0.12);
+  --ember:#FF5A36;--ember-glow:rgba(255,90,54,0.20);--ember-deep:#E8421F;
+  --mint:#1FD9A0;--mint-glow:rgba(31,217,160,0.16);
+  --txt:#EEF2F8;--txt-2:#8A95A8;--txt-3:#4D5667;
+  --r-xl:26px;--r-lg:20px;--r-md:15px;--r-sm:11px;--r-pill:999px;
+  --ease:cubic-bezier(.34,1.4,.5,1);--ease-out:cubic-bezier(.4,0,.2,1);
+  --shadow-card:0 1px 2px rgba(0,0,0,0.3),0 8px 24px rgba(0,0,0,0.28);
+  --inner-hi:inset 0 1px 0 rgba(255,255,255,0.05);
 }
-body{background:var(--bg);color:var(--text-primary);font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;font-size:var(--font-body);font-weight:450;line-height:1.55;letter-spacing:-0.015em;-webkit-font-smoothing:antialiased;max-width:430px;margin:0 auto;min-height:100dvh;overflow-x:hidden;padding-bottom:calc(84px + env(safe-area-inset-bottom));}
+body{background:var(--bg);color:var(--txt);font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;font-weight:450;line-height:1.5;letter-spacing:-0.016em;-webkit-font-smoothing:antialiased;max-width:430px;margin:0 auto;min-height:100dvh;overflow-x:hidden;padding-bottom:100px;background-image:radial-gradient(130% 45% at 50% -5%,rgba(255,90,54,0.07),transparent 55%);}
 input,textarea,button{font-family:inherit;letter-spacing:inherit;}
-button{cursor:pointer;border:none;background:none;transition:transform .12s var(--ease),opacity .16s var(--ease),background-color .16s var(--ease);}
-button:active{transform:scale(.98);}
+button{cursor:pointer;border:none;background:none;transition:transform .12s var(--ease),opacity .16s,background .16s;}
+button:active{transform:scale(.97);}
+.tabular{font-variant-numeric:tabular-nums;}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
 
-/* Number rendering — even-width digits */
-.streak-num,.sh-count b,.total-num,.pm-val,.pm-goal{font-variant-numeric:tabular-nums;}
-
-/* Button system (available app-wide; applied progressively) */
-.btn-primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:14px 20px;background:var(--accent);color:#0B1320;font-weight:650;font-size:var(--font-body);border-radius:var(--radius-md);letter-spacing:-0.01em;}
-.btn-primary:active{background:var(--accent-strong);}
-.btn-secondary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;padding:12px 18px;background:var(--surface-elevated);color:var(--text-primary);font-weight:550;font-size:var(--font-small);border-radius:var(--radius-md);border:1px solid var(--border);}
-.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;background:none;color:var(--text-secondary);font-weight:500;font-size:var(--font-small);border-radius:var(--radius-md);}
-.btn-ghost:active{background:rgba(255,255,255,0.04);}
-
-/* ONBOARDING */
-#onboard{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:100dvh;padding:env(safe-area-inset-top,0px) 24px calc(32px + env(safe-area-inset-bottom,0px));overflow-y:auto;}
-.ob-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 0 0;min-height:0;}
-.ob-logo-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:6px;}
-.ob-logo{font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:0;display:flex;align-items:center;gap:8px;}
-.ob-sub{font-size:14px;color:var(--muted);margin-bottom:24px;text-align:center;line-height:1.7;}
-.ob-card{background:var(--card);border-radius:20px;padding:28px 24px;width:100%;max-width:360px;border:1px solid var(--border);box-shadow:var(--shadow-hero);margin-top:auto;}
-.ob-step{font-size:13px;color:var(--amber);font-weight:700;margin-bottom:18px;}
-.ob-title{font-size:20px;font-weight:800;margin-bottom:6px;}
-.ob-desc{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
-.ob-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
-.ob-input{width:100%;background:var(--card2);border:1.5px solid var(--borderlit);border-radius:14px;color:var(--text);font-size:22px;font-weight:700;padding:14px 18px;outline:none;margin-bottom:14px;}
-.ob-btn{width:100%;padding:16px;background:var(--amber);color:#0B1120;font-weight:800;font-size:16px;border-radius:14px;margin-top:8px;letter-spacing:0.5px;}
-.ob-btn:disabled{opacity:0.4;}
-.ob-mirror{font-size:52px;text-align:center;margin-bottom:14px;}
-.ob-summary{background:var(--card2);border-radius:14px;padding:18px 20px;margin-bottom:22px;}
-.ob-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px;}
+/* ── Onboarding ── */
+#onboard{display:flex;flex-direction:column;min-height:100dvh;padding:env(safe-area-inset-top) 24px calc(32px + env(safe-area-inset-bottom));}
+.ob-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.ob-mark{width:96px;height:96px;border-radius:28px;background:linear-gradient(135deg,var(--ember),var(--ember-deep));display:flex;align-items:center;justify-content:center;box-shadow:0 12px 40px var(--ember-glow);}
+.ob-title{font-size:26px;font-weight:800;letter-spacing:-0.03em;margin-top:8px;}
+.ob-tag{font-size:14px;color:var(--txt-2);text-align:center;line-height:1.7;}
+.ob-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);padding:28px 24px;box-shadow:var(--shadow-card);}
+.ob-step{font-size:12px;color:var(--ember);font-weight:700;letter-spacing:0.06em;margin-bottom:14px;}
+.ob-q{font-size:21px;font-weight:750;letter-spacing:-0.02em;margin-bottom:6px;}
+.ob-desc{font-size:13px;color:var(--txt-2);margin-bottom:22px;line-height:1.6;}
+.ob-lbl{font-size:11px;color:var(--txt-3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
+.ob-input{width:100%;background:var(--surface-up);border:1.5px solid var(--line-hi);border-radius:var(--r-md);color:var(--txt);font-size:22px;font-weight:700;padding:14px 18px;outline:none;margin-bottom:14px;}
+.ob-input:focus{border-color:var(--ember);}
+.ob-btn{width:100%;min-height:54px;background:var(--ember);color:#fff;font-weight:700;font-size:16px;border-radius:var(--r-md);margin-top:6px;}
+.ob-btn:disabled{opacity:0.35;}
+.ob-sum{background:var(--surface-up);border-radius:var(--r-md);padding:18px 20px;margin-bottom:20px;}
+.ob-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:11px;}
 .ob-row:last-child{margin-bottom:0;}
 
-/* MAIN */
+/* ── App shell ── */
 #app{display:none;}
-.header{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;}
-.header-left .app-name{font-size:22px;font-weight:800;letter-spacing:-0.5px;}
-.header-left .app-day{font-size:12px;color:var(--muted);margin-top:3px;}
-.header-right .streak-num{font-size:28px;font-weight:800;line-height:1;text-align:right;}
-.header-right .streak-label{font-size:11px;color:var(--muted);text-align:right;}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:22px 24px 4px;}
+.hdr-name{font-size:17px;font-weight:700;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;}
+.hdr-mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--ember),var(--ember-deep));display:flex;align-items:center;justify-content:center;}
+.hdr-day{font-size:13px;color:var(--txt-2);font-weight:500;}
+.content{padding-top:4px;}
 
-.content{padding:16px 20px 0;}
-.card{background:var(--card);border-radius:20px;padding:20px;margin-bottom:12px;border:1px solid var(--border);box-shadow:var(--shadow-card);}
+/* ── Date strip (mini) ── */
+.dates{display:flex;gap:7px;padding:14px 24px 0;}
+.date{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);}
+.date small{font-size:10px;color:var(--txt-3);font-weight:600;}
+.date b{font-size:14px;font-weight:700;}
+.date.done b{color:var(--mint);}
+.date.done{border-color:var(--mint-glow);}
+.date.today{background:linear-gradient(135deg,var(--ember),var(--ember-deep));border-color:transparent;}
+.date.today small{color:rgba(255,255,255,0.7);}
+.date.today b{color:#fff;}
+.date-cal{display:flex;align-items:center;justify-content:center;width:42px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);color:var(--txt-2);}
+.edit-banner{margin:12px 24px 0;background:var(--ember-glow);border:1px solid rgba(255,90,54,0.3);border-radius:var(--r-md);padding:11px 16px;font-size:12.5px;color:var(--ember);text-align:center;}
+.edit-banner button{color:var(--ember);text-decoration:underline;font-weight:700;}
 
-/* Date strip */
-.date-strip-wrap{padding:14px 20px 0;}
-.date-strip-wrap .date-strip{margin-bottom:0;}
-.date-strip{display:flex;gap:7px;margin-bottom:14px;align-items:stretch;}
-.date-chip{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 2px;border-radius:14px;background:var(--card2);border:1px solid var(--borderlit);transition:all .15s;min-width:0;}
-.date-dow{font-size:10px;color:var(--muted);font-weight:600;}
-.date-md{font-size:14px;font-weight:800;color:var(--text);}
-.date-chip.sel{background:var(--card);border-color:var(--borderlit);}
-.date-chip.today{border-color:var(--amber);}
-.date-chip.today.sel{background:var(--amber);}
-.date-chip.today.sel .date-dow{color:#0B1120cc;}
-.date-chip.today.sel .date-md{color:#0B1120;}
-.date-chip.sel:not(.today){background:#60A5FA22;border-color:#60A5FA88;}
-.date-chip.sel:not(.today) .date-md{color:var(--blue);}
-.date-cal{display:flex;align-items:center;justify-content:center;padding:0 14px;border-radius:14px;background:var(--card2);border:1px solid var(--borderlit);transition:all .15s;}
-.date-cal:active{background:var(--card3);}
-.edit-banner{background:#F5A62318;border:1px solid #F5A62344;border-radius:12px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:14px;text-align:center;}
-.card-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+/* ── Hero gauge ── */
+.hero{display:flex;flex-direction:column;align-items:center;padding:30px 24px 4px;}
+.gwrap{position:relative;width:260px;height:260px;}
+.gwrap svg{transform:rotate(-90deg);overflow:visible;}
+.gtrack{stroke:var(--surface-up);}
+.gfill{stroke:url(#eg);stroke-linecap:round;filter:drop-shadow(0 0 10px var(--ember-glow));transition:stroke-dashoffset 1s var(--ease-out),stroke .5s;}
+.gcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.gnum{font-size:90px;font-weight:800;letter-spacing:-0.06em;line-height:0.85;background:linear-gradient(135deg,#fff,#FFCBBC);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.gof{font-size:13px;color:var(--txt-3);margin-top:10px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;}
+.glabel{font-size:15px;color:var(--ember);font-weight:650;margin-top:8px;}
+.gdots{position:absolute;inset:0;}
+.gd{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--surface-hi);border:2.5px solid var(--bg);transition:.3s var(--ease);}
+.gd.on{background:var(--ember);box-shadow:0 0 10px var(--ember-glow);}
 
-/* SUCCESS HERO (NEW - top priority) */
-.success-hero{margin:16px 20px 0;background:linear-gradient(135deg,#0d2010,#0d1f1a);border:1px solid #2DD4A040;border-radius:20px;padding:22px 24px;box-shadow:var(--shadow-hero);}
-.sh-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-.sh-count{font-size:15px;color:var(--muted);}
-.sh-count b{color:var(--mint);font-size:28px;font-weight:800;}
-.sh-recover{font-size:12px;color:var(--mint);background:#2DD4A018;padding:5px 12px;border-radius:20px;border:1px solid #2DD4A044;font-weight:600;}
-.sh-checks{display:flex;gap:10px;}
-.sh-check{flex:1;text-align:center;padding:12px 6px;border-radius:14px;background:var(--card2);border:1px solid var(--borderlit);transition:transform .15s var(--ease),background .2s var(--ease),border-color .2s var(--ease);}
-.sh-check:active{transform:scale(.96);}
-.sh-check.done{background:#2DD4A018;border-color:#2DD4A066;}
-.sh-check.done .sh-check-icon{animation:pop .25s var(--ease);}
-@keyframes pop{0%{transform:scale(.6);}60%{transform:scale(1.15);}100%{transform:scale(1);}}
-.sh-check-icon{font-size:22px;margin-bottom:4px;}
-.sh-check-lbl{font-size:11px;color:var(--muted);}
-.sh-check.done .sh-check-lbl{color:var(--mint);font-weight:700;}
-.sh-msg{margin-top:14px;font-size:13px;color:var(--text);line-height:1.6;text-align:center;background:#00000030;padding:12px;border-radius:12px;}
+/* ── Check cards ── */
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:26px 24px 0;}
+.chk{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 16px;min-height:92px;display:flex;align-items:center;gap:13px;box-shadow:var(--shadow-card);overflow:hidden;}
+.chk:active{transform:scale(.97);}
+.chk-ic{width:42px;height:42px;border-radius:13px;background:var(--surface-up);display:flex;align-items:center;justify-content:center;color:var(--txt-2);flex-shrink:0;transition:.2s;}
+.chk-name{font-size:15px;font-weight:650;}
+.chk-hint{font-size:11.5px;color:var(--txt-3);margin-top:2px;}
+.chk.done{background:linear-gradient(155deg,var(--mint-glow),var(--surface));border-color:var(--mint-glow);}
+.chk.done .chk-ic{background:var(--mint);color:#0A0E16;}
+.chk.done .chk-name{color:var(--mint);}
+.chk.done .chk-hint{color:var(--mint);opacity:0.65;}
 
-/* Cumulative totals strip */
-.totals-strip{margin:12px 20px 0;display:flex;gap:8px;}
-.total-box{flex:1;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 6px;text-align:center;}
-.total-num{font-size:22px;font-weight:800;line-height:1;}
-.total-num .unit{font-size:11px;font-weight:600;color:var(--muted);}
-.total-lbl{font-size:10px;color:var(--muted);margin-top:5px;}
-.total-icon{font-size:14px;margin-bottom:4px;}
+.fold{text-align:center;padding:30px 0 6px;}
+.fold-line{display:inline-flex;align-items:center;gap:8px;color:var(--txt-3);font-size:12px;}
+.fold-line::before,.fold-line::after{content:"";width:26px;height:1px;background:var(--line-hi);}
 
-/* progress (now secondary) */
-.progress-mini{margin:12px 20px 0;background:var(--card);border-radius:16px;padding:16px 20px;border:1px solid var(--border);}
-.pm-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;}
-.pm-val{font-size:26px;font-weight:800;line-height:1;}
-.pm-unit{font-size:13px;color:var(--muted);font-weight:400;}
-.pm-label{font-size:10px;color:var(--muted);margin-bottom:3px;}
-.pm-goal{font-size:20px;font-weight:800;color:var(--mint);line-height:1;}
-.pm-bar-bg{height:5px;background:var(--card3);border-radius:99px;overflow:hidden;}
-.pm-bar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--mint));border-radius:99px;transition:width .8s ease;}
-.pm-meta{display:flex;justify-content:space-between;margin-top:7px;font-size:11px;}
+.sec-lbl{font-size:12px;color:var(--txt-3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:0 26px 10px;}
+.card{margin:0 24px 12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow-card);}
 
-/* Weight input */
-.weight-input{width:100%;background:var(--card2);border:1.5px solid var(--borderlit);border-radius:14px;color:var(--text);font-size:36px;font-weight:800;padding:10px 16px;outline:none;text-align:center;letter-spacing:-2px;}
-.weight-row{display:flex;gap:10px;align-items:center;}
-.weight-unit{font-size:16px;color:var(--muted);font-weight:600;}
-.weight-diff{font-size:13px;color:var(--mint);font-weight:700;white-space:nowrap;}
+/* ── Mood ── */
+.mood-row{display:flex;gap:8px;margin-bottom:16px;}
+.mood{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:var(--r-md);background:var(--surface-up);border:1.5px solid transparent;transition:.18s var(--ease);}
+.mood-face{filter:saturate(0.5);transition:filter .2s;}
+.mood small{font-size:10px;color:var(--txt-3);}
+.mood.sel .mood-face{filter:saturate(1.1);}
+.mood.sel small{font-weight:700;}
+/* triggers */
+.trig-lbl{font-size:12px;color:var(--txt-2);margin-bottom:10px;font-weight:500;}
+.trig-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
+.trig{padding:8px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:550;background:var(--surface-up);border:1px solid var(--line);color:var(--txt-2);transition:.15s;}
+.trig.on{background:var(--ember-glow);border-color:var(--ember);color:var(--ember);font-weight:650;}
+.note-ta{width:100%;background:var(--surface-up);border:1px solid var(--line);border-radius:var(--r-md);color:var(--txt);font-size:14px;padding:13px 15px;outline:none;resize:none;min-height:72px;line-height:1.6;display:block;}
+.note-ta:focus{border-color:var(--line-hi);}
 
-/* Habit chips */
-.habit-group{margin-bottom:12px;}
-.habit-name{font-size:12px;color:var(--muted);margin-bottom:7px;}
-.chip-row{display:flex;gap:8px;}
-.chip{flex:1;padding:11px 8px;border-radius:12px;font-size:12px;font-weight:600;border:1px solid var(--borderlit);background:var(--card2);color:var(--muted);transition:all .15s;line-height:1.3;}
-.chip.on-mint{background:#2DD4A022;color:var(--mint);border-color:#2DD4A088;}
-.chip.on-amber{background:#F5A62322;color:var(--amber);border-color:#F5A62388;}
-.chip.on-red{background:#F8717122;color:var(--red);border-color:#F8717188;}
-.chip.on-yellow{background:#FBBF2422;color:#FBBF24;border-color:#FBBF2488;}
+/* ── Weight ── */
+.wtop{display:flex;justify-content:space-between;align-items:center;}
+.wval{display:flex;align-items:baseline;gap:7px;}
+.wnum-input{background:transparent;border:none;color:var(--txt);font-size:38px;font-weight:800;letter-spacing:-0.04em;outline:none;width:130px;font-variant-numeric:tabular-nums;}
+.wunit{font-size:15px;color:var(--txt-2);}
+.wtrend{font-size:12px;color:var(--mint);font-weight:700;background:var(--mint-glow);padding:4px 10px;border-radius:var(--r-pill);}
+.spark{margin-top:14px;height:44px;}
 
-/* Exercise */
-.ex-label{font-size:12px;color:var(--muted);margin-bottom:8px;}
-.ex-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
-.ex-chip{padding:9px 11px;border-radius:12px;font-size:12px;font-weight:600;border:1px solid var(--borderlit);background:var(--card2);color:var(--muted);transition:all .15s;}
-.ex-chip.on{background:#F5A62322;color:var(--amber);border-color:#F5A62388;}
-.ex-chip.on-blue{background:#60A5FA22;color:var(--blue);border-color:#60A5FA88;}
-.ex-chip.on-mint{background:#2DD4A022;color:var(--mint);border-color:#2DD4A088;}
+/* ── Streak dots ── */
+.streak-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.streak-big{font-size:15px;font-weight:600;}
+.streak-big b{color:var(--ember);font-size:17px;}
+.streak-dots{display:flex;justify-content:space-between;gap:6px;}
+.sdot{flex:1;aspect-ratio:1;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--surface-up);border:1px solid var(--line);}
+.sdot small{font-size:9px;color:var(--txt-3);}
+.sdot.full{background:var(--mint-glow);border-color:var(--mint-glow);}
+.sdot.full .sdot-ic{color:var(--mint);}
+.sdot.part{background:var(--ember-glow);border-color:var(--ember-glow);}
+.sdot.part .sdot-ic{color:var(--ember);}
+.sdot-ic{width:14px;height:14px;color:var(--txt-3);}
+.sdot.today{outline:2px solid var(--ember);outline-offset:1px;}
 
-/* Note */
-.note-ta{width:100%;background:var(--card2);border:1px solid var(--borderlit);border-radius:12px;color:var(--text);font-size:14px;padding:12px 14px;outline:none;resize:none;min-height:90px;line-height:1.6;display:block;}
+/* ── AI ── */
+.ai{margin:0 24px 12px;background:linear-gradient(135deg,rgba(255,90,54,0.07),var(--surface));border:1px solid var(--ember-glow);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-card);}
+.ai-head{font-size:11px;font-weight:700;color:var(--ember);letter-spacing:0.04em;display:flex;align-items:center;gap:5px;margin-bottom:9px;}
+.ai-txt{font-size:14.5px;line-height:1.65;}
+.ai-loading{font-size:13px;color:var(--txt-2);}
+.ai-cta{margin-top:12px;width:100%;padding:11px;font-size:13px;background:var(--ember-glow);color:var(--ember);border-radius:var(--r-md);font-weight:600;}
 
-/* Mood */
-.mood-row{display:flex;gap:7px;margin-bottom:14px;}
-.mood-chip{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px 4px;border-radius:14px;background:var(--card2);border:1px solid var(--borderlit);transition:all .15s;}
-.mood-emoji{font-size:24px;filter:grayscale(0.6);transition:filter .15s;}
-.mood-lbl{font-size:10px;color:var(--muted);}
-.mood-chip.sel{border-width:1.5px;}
-.mood-chip.sel .mood-emoji{filter:grayscale(0);}
-.mood-chip.sel .mood-lbl{font-weight:700;}
+.btn-primary{width:100%;min-height:52px;background:var(--ember);color:#fff;font-weight:700;font-size:16px;border-radius:var(--r-md);margin:4px 24px 0;width:calc(100% - 48px);}
+.btn-sec{width:calc(100% - 48px);margin:14px 24px 0;min-height:48px;background:var(--surface-up);color:var(--txt);font-weight:600;font-size:14px;border-radius:var(--r-md);border:1px solid var(--line);}
 
-/* AI auto line */
-.ai-line{background:linear-gradient(135deg,#0d1f35,#131b30);border:1px solid #60A5FA33;border-radius:16px;padding:18px 20px;margin-bottom:12px;}
-.ai-line-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.ai-line-badge{font-size:11px;color:var(--blue);font-weight:700;}
-.ai-line-text{font-size:14px;line-height:1.7;color:var(--text);}
-.ai-line-loading{font-size:13px;color:var(--muted);}
-.ai-detail-btn{margin-top:12px;width:100%;padding:11px;font-size:13px;background:#60A5FA15;color:var(--blue);border:1px solid #60A5FA33;border-radius:12px;font-weight:600;}
+/* ── Page title ── */
+.ptitle{font-size:25px;font-weight:780;letter-spacing:-0.03em;padding:8px 24px 4px;}
+.psub{font-size:14px;color:var(--txt-2);padding:0 24px 18px;}
 
-/* Tip tab */
-.tip-eval{background:#0d2010;border:1px solid #2DD4A033;border-radius:20px;padding:20px;margin-bottom:12px;}
-.tip-item{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:12px;}
-.tip-num{width:30px;height:30px;border-radius:10px;background:#60A5FA22;border:1px solid #60A5FA44;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--blue);font-weight:800;margin-right:10px;vertical-align:middle;}
-.tip-item-title{font-size:14px;font-weight:700;color:var(--blue);display:inline;vertical-align:middle;}
-.tip-item-body{font-size:13px;line-height:1.8;margin-top:10px;padding-left:40px;color:var(--text);}
-.tip-quote{background:linear-gradient(135deg,#1a1a2e,#1e1a2e);border:1px solid #A78BFA44;border-radius:20px;padding:28px 24px;text-align:center;margin-bottom:12px;}
-.tip-empty{background:var(--card);border-radius:20px;padding:48px 20px;text-align:center;color:var(--muted);font-size:14px;line-height:1.8;}
-.loading-wrap{background:var(--card);border-radius:20px;padding:48px 20px;text-align:center;margin-bottom:12px;}
+/* ── Coaching ── */
+.coach-badge{font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-glow);border:1px solid rgba(255,90,54,0.25);border-radius:var(--r-pill);padding:6px 12px;}
+.coach-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;padding:40px 24px;}
+.coach-empty p{font-size:15px;color:var(--txt-2);line-height:1.6;}
+.coach-letter{margin:0 24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 20px;box-shadow:var(--shadow-card);}
+.cl-lead{font-size:16px;font-weight:550;line-height:1.65;margin-bottom:18px;}
+.cl-act{padding:14px 0;border-top:1px solid var(--line);}
+.cl-act-t{font-size:14px;font-weight:650;color:var(--ember);margin-bottom:5px;}
+.cl-act-b{font-size:14px;color:var(--txt-2);line-height:1.6;}
+.cl-close{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:15px;font-weight:550;line-height:1.6;}
+.insight{margin:0 24px 12px;background:linear-gradient(135deg,var(--mint-glow),var(--surface));border:1px solid var(--mint-glow);border-radius:var(--r-lg);padding:18px 20px;}
+.insight-h{font-size:11px;font-weight:700;color:var(--mint);letter-spacing:0.04em;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.insight-t{font-size:14px;line-height:1.6;}
 
-/* Chart */
-.chart-wrap{overflow-x:auto;}
-.chart-note{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;font-style:italic;}
-.chart-meta{margin-top:18px;border-top:1px solid var(--border);padding-top:16px;}
-.chart-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px;}
-
-/* Stats in trend tab */
-.stat-summary-row{display:flex;gap:8px;margin-bottom:16px;}
-.stat-sum-box{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px 6px;text-align:center;}
-.stat-sum-num{font-size:24px;font-weight:800;line-height:1;}
-.stat-sum-num .u{font-size:11px;font-weight:600;color:var(--muted);}
-.stat-sum-lbl{font-size:10px;color:var(--muted);margin-top:5px;}
-.stat-bar-item{margin-bottom:14px;}
-.stat-bar-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
-.stat-bar-name{font-size:13px;color:var(--text);}
-.stat-bar-val{font-size:13px;font-weight:700;}
-.stat-bar-bg{height:8px;background:var(--card3);border-radius:99px;overflow:hidden;}
-.stat-bar-fill{height:100%;border-radius:99px;transition:width .8s ease;}
-
-/* Calendar ring view */
-.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px;}
-.cal-dow{text-align:center;font-size:10px;color:var(--muted);font-weight:600;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+/* ── Trend ── */
+.cal-block{margin:0 24px 20px;}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cal-title{font-size:15px;font-weight:650;}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px;}
+.cal-dow span{text-align:center;font-size:10px;color:var(--txt-3);font-weight:600;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
 .cal-cell{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;}
 .cal-cell.empty{visibility:hidden;}
 .cal-ring{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
-.cal-ring svg{width:100%;height:100%;max-width:42px;max-height:42px;}
-.cal-num{position:relative;font-size:12px;font-weight:700;color:var(--text);z-index:1;}
-.cal-num.future{color:#3a4258;}
-.cal-cell.today .cal-num{color:var(--amber);font-weight:800;}
-.cal-legend{display:flex;justify-content:center;gap:14px;margin-top:14px;flex-wrap:wrap;}
-.cal-legend span{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px;}
-.cal-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+.cal-num{position:relative;font-size:11px;font-weight:700;z-index:1;color:var(--txt-2);}
+.cal-num.fut{color:var(--txt-3);opacity:0.4;}
+.cal-cell.today .cal-num{color:var(--ember);}
+.cal-legend{display:flex;justify-content:center;gap:14px;margin-top:14px;}
+.cal-legend span{font-size:10px;color:var(--txt-3);display:flex;align-items:center;gap:5px;}
+.cal-dot{width:8px;height:8px;border-radius:50%;}
+.tw-row{display:flex;gap:8px;margin-top:14px;}
+.tw{flex:1;}
+.tw small{font-size:11px;color:var(--txt-3);display:block;margin-bottom:3px;}
+.tw b{font-size:16px;font-weight:700;}
+.stat-bar{margin-bottom:13px;}
+.stat-bh{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
+.stat-bh b{color:var(--txt-2);}
+.stat-bg{height:7px;background:var(--surface-up);border-radius:var(--r-pill);overflow:hidden;}
+.stat-fill{height:100%;background:var(--ember);border-radius:var(--r-pill);}
 
-/* Log */
-.log-item{background:var(--card);border-radius:20px;padding:18px 20px;margin-bottom:12px;border-left:3px solid var(--mint);}
-.log-item.bad{border-left-color:var(--amber);}
-.log-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.log-tags{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;}
-.log-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;}
+/* badges */
+.badges{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 24px 12px;}
+.badge{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-card);}
+.badge.locked{opacity:0.4;}
+.badge-ic{width:40px;height:40px;border-radius:11px;background:var(--ember-glow);display:flex;align-items:center;justify-content:center;color:var(--ember);flex-shrink:0;}
+.badge.locked .badge-ic{background:var(--surface-up);color:var(--txt-3);}
+.badge-n{font-size:14px;font-weight:650;}
+.badge-d{font-size:11px;color:var(--txt-3);margin-top:1px;}
 
-/* Alarm */
-.alarm-item{background:var(--card);border-radius:20px;padding:16px 20px;margin-bottom:12px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;}
-.alarm-time{background:var(--card2);border:1px solid var(--borderlit);border-radius:10px;color:var(--text);font-size:18px;font-weight:700;padding:8px 12px;outline:none;}
-.alarm-label{flex:1;font-size:13px;}
-.alarm-label-input{flex:1;min-width:0;background:var(--card2);border:1px solid var(--borderlit);border-radius:10px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;}
-.alarm-label-input:focus{border-color:var(--amber);}
-.alarm-del{padding:7px 10px;font-size:13px;border-radius:10px;border:1px solid var(--borderlit);background:var(--card2);color:var(--muted);flex-shrink:0;}
-.alarm-del:active{background:#F8717122;color:var(--red);}
-.alarm-add{width:100%;padding:14px;background:var(--card2);border:1.5px dashed var(--borderlit);border-radius:16px;color:var(--amber);font-size:14px;font-weight:600;}
-.alarm-toggle{padding:7px 16px;font-size:12px;font-weight:700;border-radius:10px;border:1px solid var(--borderlit);background:var(--card2);color:var(--muted);}
-.alarm-toggle.on{background:#2DD4A022;color:var(--mint);border-color:var(--mint);}
+/* ── Log ── */
+.log-list{padding:0 24px;display:flex;flex-direction:column;gap:10px;}
+.log-empty{text-align:center;color:var(--txt-2);padding:40px 24px;font-size:14px;line-height:1.7;}
+.log-row{display:flex;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;border-left:3px solid var(--mint);box-shadow:var(--shadow-card);}
+.log-row.part{border-left-color:var(--ember);}
+.log-row.none{border-left-color:var(--line-hi);}
+.log-main{flex:1;min-width:0;}
+.log-date{font-size:14px;font-weight:650;}
+.log-status{font-size:12.5px;color:var(--txt-2);margin-top:3px;}
+.log-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
+.log-chip{font-size:11px;color:var(--txt-3);background:var(--surface-up);border-radius:var(--r-pill);padding:3px 9px;}
+.log-chip.ok{color:var(--mint);background:var(--mint-glow);}
+.log-chip.trig{color:var(--ember);background:var(--ember-glow);}
+.log-note{font-size:12.5px;color:var(--txt-2);line-height:1.55;margin-top:8px;}
+.log-w{font-size:17px;font-weight:700;white-space:nowrap;align-self:flex-start;}
+.log-w span{font-size:11px;color:var(--txt-3);font-weight:450;}
 
-/* Friends */
-.friend-me{background:linear-gradient(135deg,#0d2010,#0d1f1a);border:1px solid #2DD4A040;border-radius:20px;padding:20px;margin-bottom:14px;}
-.friend-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;}
-.friend-avatar{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.friend-info{flex:1;min-width:0;}
-.friend-name{font-size:15px;font-weight:700;margin-bottom:3px;}
-.friend-sub{font-size:11px;color:var(--muted);}
-.friend-stats{display:flex;gap:16px;align-items:center;flex-shrink:0;}
-.friend-stat{text-align:center;}
-.friend-stat-num{font-size:18px;font-weight:800;line-height:1;}
-.friend-stat-lbl{font-size:9px;color:var(--muted);margin-top:3px;}
-.friend-rate-bar{height:5px;background:var(--card3);border-radius:99px;overflow:hidden;margin-top:8px;}
-.friend-rate-fill{height:100%;border-radius:99px;transition:width .8s ease;}
-.friend-online{width:8px;height:8px;border-radius:50%;background:var(--mint);display:inline-block;margin-right:4px;}
-.friend-offline{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:4px;}
-.friend-add{width:100%;padding:15px;background:var(--card2);border:1.5px dashed var(--borderlit);border-radius:16px;color:var(--blue);font-size:14px;font-weight:600;margin-top:6px;}
-.friend-code{background:var(--card2);border:1px solid var(--borderlit);border-radius:14px;padding:16px 18px;margin-bottom:14px;text-align:center;}
-.friend-code-val{font-size:24px;font-weight:800;letter-spacing:4px;color:var(--amber);margin:8px 0;}
-.demo-badge{background:#A78BFA22;color:var(--purple);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid #A78BFA44;}
-.friend-section-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin:18px 4px 12px;}
-.privacy-note{background:#12122a;border:1px solid #2a2a5a;border-radius:16px;padding:14px 18px;margin-top:14px;}
+/* ── Friends ── */
+.share{display:flex;align-items:center;gap:12px;margin:0 24px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:15px 16px;box-shadow:var(--shadow-card);}
+.share-info{flex:1;}
+.share-l{font-size:11px;color:var(--txt-3);}
+.share-c{font-size:18px;font-weight:700;letter-spacing:0.04em;margin-top:2px;}
+.share-btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface-up);color:var(--txt-2);font-size:13px;font-weight:550;padding:9px 14px;border-radius:var(--r-md);border:1px solid var(--line);}
+.friend-list{padding:0 24px;display:flex;flex-direction:column;gap:10px;}
+.frow{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 15px;box-shadow:var(--shadow-card);}
+.frow.me{outline:1.5px solid var(--ember-glow);}
+.fav{width:40px;height:40px;border-radius:50%;background:var(--surface-up);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.fmid{flex:1;min-width:0;}
+.fnm{font-size:14px;font-weight:650;}
+.fmeta{font-size:12px;color:var(--txt-3);margin-top:2px;}
+.fprog{height:4px;background:var(--surface-up);border-radius:var(--r-pill);margin-top:8px;overflow:hidden;}
+.fprog-fill{height:100%;background:var(--ember);border-radius:var(--r-pill);}
+.fcheer{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:550;color:var(--txt-2);background:var(--surface-up);border:1px solid var(--line);border-radius:var(--r-pill);padding:8px 12px;flex-shrink:0;}
+.ffoot{font-size:11px;color:var(--txt-3);text-align:center;line-height:1.7;margin:14px 24px 0;}
 
-/* Bottom tab bar */
-.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--surface);border-top:1px solid var(--divider);display:flex;align-items:flex-start;min-height:68px;padding:10px 0 calc(8px + env(safe-area-inset-bottom));z-index:100;}
-.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;min-height:44px;padding-top:2px;}
-.tab-icon{display:flex;align-items:center;justify-content:center;height:24px;}
-.tab-icon svg{width:23px;height:23px;stroke:var(--text-muted);transition:stroke .15s var(--ease);}
-.tab-btn:has(.tab-lbl.active) .tab-icon svg{stroke:var(--accent);}
-.tab-lbl{font-size:11px;color:var(--text-muted);font-weight:500;letter-spacing:-0.01em;transition:color .15s;}
-.tab-lbl.active{color:var(--accent);font-weight:650;}
-.tab-dot{width:20px;height:2px;background:var(--accent);border-radius:99px;margin-top:1px;}
+/* ── Alarm ── */
+.alarm-list{padding:0 24px;display:flex;flex-direction:column;gap:9px;}
+.arow{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 14px;box-shadow:var(--shadow-card);}
+.atime{background:transparent;border:none;color:var(--txt);font-size:18px;font-weight:700;outline:none;font-variant-numeric:tabular-nums;width:auto;}
+.aname{flex:1;min-width:0;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--txt);font-size:14px;padding:5px 2px;outline:none;}
+.aname:focus{border-bottom-color:var(--ember);}
+.atoggle{padding:7px 15px;font-size:12px;font-weight:700;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface-up);color:var(--txt-3);}
+.atoggle.on{background:var(--mint-glow);color:var(--mint);border-color:var(--mint);}
+.adel{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--txt-3);border-radius:var(--r-sm);flex-shrink:0;}
+.anote{font-size:12px;color:var(--txt-3);line-height:1.6;margin:14px 24px 0;}
 
-/* Toast */
-#toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--borderlit);border-radius:14px;padding:12px 24px;font-size:14px;box-shadow:0 8px 32px #00000080;z-index:200;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;}
+/* ── Tabbar ── */
+.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,14,22,0.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);display:none;padding:10px 0 calc(10px + env(safe-area-inset-bottom));z-index:50;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--txt-3);background:none;}
+.tab.on{color:var(--ember);}
+.tab small{font-size:10.5px;font-weight:600;}
+
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--surface-hi);border:1px solid var(--line-hi);border-radius:var(--r-md);padding:12px 22px;font-size:14px;box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:200;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
 #toast.show{opacity:1;}
-/* ============ STEP 2 REFINEMENT ============ */
-.ic{width:1.05em;height:1.05em;vertical-align:-0.15em;flex-shrink:0;}
 
-/* Brand mirror in header / onboarding */
-.header-left .app-name{display:flex;align-items:center;gap:7px;font-size:22px;font-weight:700;letter-spacing:-0.03em;}
-.brand-mark{display:inline-flex;}
-.brand-mark svg{display:block;}
-.ob-logo{display:flex;align-items:center;justify-content:center;gap:8px;}
-.ob-mark{display:inline-flex;}
-
-/* Header streak as sentence */
-.streak-status{font-size:13px;color:var(--text-secondary);font-weight:450;text-align:right;line-height:1.4;}
-.streak-status .ss-strong{color:var(--accent);font-weight:650;}
-
-/* Page titles (used across screens) */
-.page-title{font-size:var(--font-page-title);font-weight:700;letter-spacing:-0.035em;line-height:1.3;margin-bottom:4px;}
-.page-sub{font-size:var(--font-small);color:var(--text-secondary);font-weight:450;line-height:1.5;margin-bottom:22px;}
-
-/* Edit banner icon */
-.eb-ic{display:inline-flex;margin-right:4px;}
-.eb-ic .ic{width:14px;height:14px;}
-
-/* Totals — light inline summary, no boxes */
-.totals-strip{margin:14px 20px 4px;align-items:center;gap:0;}
-.tl-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
-.tl-num{font-size:18px;font-weight:650;color:var(--text-primary);font-variant-numeric:tabular-nums;}
-.tl-num.accent{color:var(--accent);}
-.tl-lbl{font-size:11px;color:var(--text-muted);font-weight:450;}
-.tl-div{width:1px;height:24px;background:var(--divider);}
-
-/* Success hero check icons (SVG) */
-.sh-check-icon{height:24px;display:flex;align-items:center;justify-content:center;margin-bottom:5px;}
-.sh-check-icon svg{width:22px;height:22px;stroke:var(--text-secondary);}
-.sh-check.done .sh-check-icon svg{stroke:var(--accent);}
-
-/* Mood — colored face icon */
-.mood-dot{width:9px;height:9px;border-radius:50%;background:var(--text-muted);transition:background .15s;}
-.mood-face{display:flex;align-items:center;justify-content:center;line-height:1;filter:saturate(0.55);transition:filter .18s;}
-.mood-chip.sel .mood-face{filter:saturate(1) drop-shadow(0 1px 4px rgba(0,0,0,0.18));}
-
-/* Coaching — letter style */
-.coach-head{margin-bottom:4px;}
-.coach-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:48px 16px 24px;gap:18px;}
-.coach-mark{opacity:.92;}
-.coach-empty-text{font-size:var(--font-body);color:var(--text-secondary);line-height:1.6;}
-.coach-letter{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 20px;}
-.cl-lead{font-size:16px;line-height:1.65;color:var(--text-primary);font-weight:500;margin-bottom:18px;}
-.cl-action{padding:14px 0;border-top:1px solid var(--divider);}
-.cl-action-title{font-size:14px;font-weight:650;color:var(--accent);margin-bottom:5px;letter-spacing:-0.01em;}
-.cl-action-body{font-size:14px;line-height:1.6;color:var(--text-secondary);}
-.cl-close{margin-top:16px;padding-top:16px;border-top:1px solid var(--divider);font-size:15px;line-height:1.6;color:var(--text-primary);font-weight:500;}
-
-/* Log — calm rows */
-.log-list{display:flex;flex-direction:column;gap:10px;}
-.log-empty{text-align:center;color:var(--text-secondary);padding:48px 20px;font-size:14px;line-height:1.6;}
-.log-row{display:flex;gap:12px;background:var(--surface);border-radius:var(--radius-lg);padding:16px 18px;border-left:2px solid var(--divider);}
-.log-row.clean{border-left-color:var(--accent);}
-.log-row.partial{border-left-color:var(--warm);}
-.lg-main{flex:1;min-width:0;}
-.lg-date{font-size:14px;font-weight:600;color:var(--text-primary);letter-spacing:-0.01em;}
-.lg-status{font-size:13px;color:var(--text-secondary);margin-top:3px;}
-.lg-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
-.lg-chip{font-size:11px;color:var(--text-muted);background:var(--surface-elevated);border-radius:var(--radius-pill);padding:3px 9px;}
-.lg-chip.ok{color:var(--accent);background:var(--accent-soft);}
-.lg-note{font-size:13px;color:var(--text-secondary);line-height:1.55;margin-top:9px;}
-.lg-weight{font-size:18px;font-weight:650;color:var(--text-primary);white-space:nowrap;font-variant-numeric:tabular-nums;align-self:flex-start;}
-.lg-weight span{font-size:12px;color:var(--text-muted);font-weight:450;margin-left:2px;}
-.lg-noweight{font-size:18px;color:var(--text-muted);}
-
-/* Friends — companion, not competition */
-.share-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:18px;}
-.share-info{flex:1;min-width:0;}
-.share-lbl{font-size:11px;color:var(--text-muted);}
-.share-code{font-size:18px;font-weight:700;letter-spacing:0.04em;color:var(--text-primary);margin-top:2px;}
-.share-copy{display:inline-flex;align-items:center;gap:5px;background:var(--surface-elevated);color:var(--text-secondary);font-size:13px;font-weight:500;padding:9px 14px;border-radius:var(--radius-md);border:1px solid var(--border);}
-.friend-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
-.friend-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 15px;}
-.friend-row.me{border-color:transparent;outline:1.5px solid var(--accent-soft);background:color-mix(in srgb,var(--accent) 6%,var(--surface));}
-.friend-av{width:38px;height:38px;border-radius:50%;background:var(--surface-elevated);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
-.friend-mid{flex:1;min-width:0;}
-.friend-nm{font-size:14px;font-weight:600;color:var(--text-primary);}
-.friend-meta{font-size:12px;color:var(--text-muted);margin-top:2px;}
-.friend-prog{height:4px;background:var(--surface-elevated);border-radius:var(--radius-pill);margin-top:8px;overflow:hidden;}
-.friend-prog-fill{height:100%;background:var(--accent);border-radius:var(--radius-pill);transition:width .6s var(--ease);}
-.friend-cheer{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--text-secondary);background:var(--surface-elevated);border:1px solid var(--border);border-radius:var(--radius-pill);padding:8px 12px;flex-shrink:0;}
-.friend-cheer:active{color:var(--warm);}
-.friend-foot{font-size:11px;color:var(--text-muted);text-align:center;line-height:1.7;margin-top:14px;}
-
-/* Alarm — list rows */
-.alarm-list{display:flex;flex-direction:column;gap:8px;}
-.alarm-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px 12px;}
-.alarm-time{flex-shrink:0;background:transparent;border:none;color:var(--text-primary);font-size:16px;font-weight:600;padding:4px 2px;outline:none;font-variant-numeric:tabular-nums;width:auto;}
-.alarm-name{flex:1;min-width:0;width:100%;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text-primary);font-size:14px;font-weight:450;padding:5px 2px;outline:none;}
-.alarm-name:focus{border-bottom-color:var(--accent);}
-.alarm-del{display:flex;align-items:center;justify-content:center;width:34px;height:34px;color:var(--text-muted);border-radius:var(--radius-md);flex-shrink:0;}
-.alarm-del .ic{width:18px;height:18px;}
-.alarm-del:active{color:var(--danger,#FF6F78);background:rgba(255,111,120,.1);}
-.alarm-note{font-size:12px;color:var(--text-muted);line-height:1.6;margin-top:14px;padding:0 2px;}
-
-/* Trend — lighter calendar + weight summary */
-.cal-block{margin-bottom:28px;}
-.cal-title{font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:12px;letter-spacing:-0.01em;}
-.cal-legend{display:flex;justify-content:center;gap:16px;margin-top:14px;}
-.cal-legend span{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;}
-.trend-weights{display:flex;gap:8px;margin-top:14px;}
-.tw-item{flex:1;display:flex;flex-direction:column;gap:3px;}
-.tw-lbl{font-size:11px;color:var(--text-muted);}
-.tw-val{font-size:15px;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums;}
-.trend-sum{font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:4px;}
-.trend-sum b{color:var(--text-primary);font-weight:650;font-variant-numeric:tabular-nums;}
-.stat-caption{font-size:11px;color:var(--text-muted);margin-bottom:14px;}
-.stat-bar-fill{background:var(--warm)!important;}
-.stat-bar-name{color:var(--text-secondary);}
-.stat-bar-val{color:var(--text-muted)!important;font-variant-numeric:tabular-nums;}
-.stat-week{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--divider);padding-top:14px;margin-top:6px;font-size:13px;color:var(--text-secondary);}
-.stat-week b{font-weight:700;font-variant-numeric:tabular-nums;}
+@keyframes pop{0%{transform:scale(.4);}65%{transform:scale(1.2);}100%{transform:scale(1);}}
 </style>
 </head>
 <body>
 
-<div id="onboard">
-  <div class="ob-hero">
-    <div class="ob-logo-wrap">
-      <span id="ob-big-mark"></span>
-      <div class="ob-logo"><span class="ob-mark" id="ob-mark"></span>몸회수</div>
-      <div class="ob-sub">망가진 몸을 다시 내 편으로</div>
-    </div>
-  </div>
-  <div class="ob-card" id="ob-card"></div>
-</div>
+<div id="onboard"></div>
 
 <div id="app">
-  <div class="header">
-    <div class="header-left">
-      <div class="app-name"><span class="brand-mark" id="brand-mark"></span><span>몸회수</span></div>
-      <div class="app-day" id="hdr-day"></div>
-    </div>
-    <div class="header-right">
-      <div class="streak-status" id="hdr-streak"></div>
-    </div>
+  <div class="hdr">
+    <div class="hdr-name"><span class="hdr-mark" id="hdr-mark"></span>몸회수</div>
+    <button class="hdr-day" id="hdr-set" onclick="openSettings()" style="display:flex;align-items:center;gap:6px;background:none">
+      <span id="hdr-day"></span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--txt-3)"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.6-2-3.5-2.4 1a7 7 0 0 0-2.2-1.3L14 1h-4l-.3 2.5a7 7 0 0 0-2.2 1.3l-2.4-1-2 3.5 2 1.6A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.6 2 3.5 2.4-1a7 7 0 0 0 2.2 1.3L10 23h4l.3-2.5a7 7 0 0 0 2.2-1.3l2.4 1 2-3.5-2-1.6c.1-.4.1-.8.1-1.3z"/></svg>
+    </button>
   </div>
-
-  <!-- DATE STRIP (right under title) -->
-  <div class="date-strip-wrap" id="date-strip-wrap"></div>
-
-  <!-- SUCCESS HERO (top priority now) -->
-  <div class="success-hero" id="success-hero">
-    <div class="sh-top">
-      <div class="sh-count">오늘 <b id="sh-num">0</b><span style="font-size:15px;"> / 4 완료</span></div>
-      <div class="sh-recover" id="sh-recover">회수 1일차</div>
-    </div>
-    <div class="sh-checks" id="sh-checks"></div>
-    <div class="sh-msg" id="sh-msg" style="display:none;"></div>
-  </div>
-
-  <!-- cumulative totals -->
-  <div class="totals-strip" id="totals-strip"></div>
-
-  <!-- weight progress (secondary) -->
-  <div class="progress-mini" id="progress-mini">
-    <div class="pm-row">
-      <div>
-        <div class="pm-label">현재</div>
-        <div class="pm-val"><span id="pm-cur">–</span><span class="pm-unit"> kg</span></div>
-      </div>
-      <div style="font-size:12px;color:var(--muted);">→</div>
-      <div style="text-align:right;">
-        <div class="pm-label">목표</div>
-        <div class="pm-goal"><span id="pm-goal">–</span><span style="font-size:12px;color:var(--muted);font-weight:400;"> kg</span></div>
-      </div>
-    </div>
-    <div class="pm-bar-bg"><div class="pm-bar-fill" id="pm-bar" style="width:0%"></div></div>
-    <div class="pm-meta">
-      <span style="color:var(--muted);" id="pm-start-lbl"></span>
-      <span style="color:var(--amber);font-weight:700;" id="pm-pct">0% 회수</span>
-    </div>
-  </div>
-
   <div class="content" id="content"></div>
 </div>
 
-<div class="tabbar" id="tabbar" style="display:none;">
-  <button class="tab-btn" onclick="switchTab('home')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="9.5" rx="6.2" ry="6.8"/><line x1="12" y1="16.3" x2="12" y2="21.5"/><line x1="9" y1="21.5" x2="15" y2="21.5"/></svg></span><span class="tab-lbl" id="tl-home">오늘</span><div class="tab-dot" id="td-home" style="display:none;"></div></button>
-  <button class="tab-btn" onclick="switchTab('friends')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c0-3 2.6-5.2 5.5-5.2s5.5 2.2 5.5 5.2"/><path d="M16.2 5.3a3 3 0 0 1 0 5.9"/><path d="M16.8 14.5c2.3.4 3.9 2.2 3.9 5"/></svg></span><span class="tab-lbl" id="tl-friends">친구</span><div class="tab-dot" id="td-friends" style="display:none;"></div></button>
-  <button class="tab-btn" onclick="switchTab('tip')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3l1.7 4.3L17 9l-4.3 1.7L11 15l-1.7-4.3L5 9l4.3-1.7z"/><path d="M18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></span><span class="tab-lbl" id="tl-tip">코칭</span><div class="tab-dot" id="td-tip" style="display:none;"></div></button>
-  <button class="tab-btn" onclick="switchTab('chart')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 16 9 10 13 14 21 6"/><polyline points="15 6 21 6 21 12"/></svg></span><span class="tab-lbl" id="tl-chart">추세</span><div class="tab-dot" id="td-chart" style="display:none;"></div></button>
-  <button class="tab-btn" onclick="switchTab('log')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.5" width="14" height="16" rx="2.5"/><path d="M9 4.5h6v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/><line x1="8.5" y1="11.5" x2="15.5" y2="11.5"/><line x1="8.5" y1="15" x2="13" y2="15"/></svg></span><span class="tab-lbl" id="tl-log">기록</span><div class="tab-dot" id="td-log" style="display:none;"></div></button>
-  <button class="tab-btn" onclick="switchTab('alarm')"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.8 1.8 6 1.8 6H4.2S6 14.3 6 9.5z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></span><span class="tab-lbl" id="tl-alarm">알람</span><div class="tab-dot" id="td-alarm" style="display:none;"></div></button>
-</div>
-
+<div class="tabbar" id="tabbar"></div>
 <div id="toast"></div>
 
 <script>
-const KEY="momhoesu_v1";
-let state=null,currentTab="home",tipData=null,tipLoading=false,alarmFired={},autoLine=null,autoLineLoading=false;
+const KEY="momhoesu_v3";
+let state=null,tab="home",editDate=null,tipData=null,tipLoading=false,alarmFired={};
 
-// Brand mark — muscleman pictogram (mint, filled, scales via width/height)
-function MUSCLEMAN(s,c){
-  s=s||22;c=c||"currentColor";
-  return `<svg viewBox="0 0 48 56" width="${s}" height="${s}" fill="${c}" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="24" cy="8" rx="7.5" ry="7.5"/>
-    <path d="M9 23 C9 18 15 15 24 15 C33 15 39 18 39 23 L37 37 L11 37 Z"/>
-    <path d="M11 25 C6 22 2 28 4 34 C5 37 10 38 12 35 L14 27 Z"/>
-    <path d="M37 25 C42 22 46 28 44 34 C43 37 38 38 36 35 L34 27 Z"/>
-    <path d="M11 37 L13 45 L35 45 L37 37 Z"/>
-    <rect x="11" y="45" width="11" height="11" rx="5"/>
-    <rect x="26" y="45" width="11" height="11" rx="5"/>
-  </svg>`;
-}
-function MIRROR(s,c){return MUSCLEMAN(s,c);}// legacy alias
-// Consistent outline icon set (stroke 1.8, round). Sized via .ic { width:1em } unless overridden.
-const _S='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+/* ─── Icons ─── */
+function MARK(s,c){s=s||20;c=c||"#fff";return `<svg viewBox="0 0 48 56" width="${s}" height="${s}" fill="${c}"><ellipse cx="24" cy="9" rx="7" ry="7"/><path d="M10 24 C10 19 16 16 24 16 C32 16 38 19 38 24 L36 37 L12 37 Z"/><path d="M12 26 C7 23 3 29 5 35 C6 38 11 39 13 36 L15 28 Z"/><path d="M36 26 C41 23 45 29 43 35 C42 38 37 39 35 36 L33 28 Z"/><rect x="13" y="44" width="9" height="11" rx="4.5"/><rect x="26" y="44" width="9" height="11" rx="4.5"/></svg>`;}
+const S='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">';
 const ICON={
-  check:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 6.5"/></svg>',
-  moon:_S+'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5z"/></svg>',
-  bag:_S+'<path d="M6.5 8.5h11l-1 11h-9z"/><path d="M9 8.5a3 3 0 0 1 6 0"/></svg>',
-  snack:_S+'<circle cx="12" cy="12" r="8.3"/><circle cx="9.2" cy="10" r="1"/><circle cx="14" cy="9.3" r="1"/><circle cx="13.5" cy="14" r="1"/><circle cx="9.6" cy="14.6" r="1"/></svg>',
-  run:_S+'<circle cx="14.5" cy="5" r="2"/><path d="M5 20l3.2-4.2 2.3 2 2-5.3 3 2.2h2.5"/><path d="M8.2 11.5l2.3-3.2 3.2 1.1"/></svg>',
-  calendar:_S+'<rect x="4" y="5.5" width="16" height="15" rx="2.5"/><line x1="4" y1="9.5" x2="20" y2="9.5"/><line x1="8.5" y1="3.5" x2="8.5" y2="7"/><line x1="15.5" y1="3.5" x2="15.5" y2="7"/></svg>',
-  pencil:_S+'<path d="M14.5 5l4.5 4.5"/><path d="M4 20l1.2-4.2L16 5l3 3L8.2 18.8z"/></svg>',
-  trash:_S+'<path d="M5 7h14"/><path d="M9.5 7V5h5v2"/><path d="M7 7l1 13h8l1-13"/></svg>',
-  scale:_S+'<path d="M5.5 9h13l-1.4 10.5h-10.2z"/><circle cx="12" cy="6" r="2.1"/></svg>',
-  copy:_S+'<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.3"/><path d="M15.5 8.5V6.3A2.3 2.3 0 0 0 13.2 4H6.3A2.3 2.3 0 0 0 4 6.3v6.9a2.3 2.3 0 0 0 2.3 2.3h2.2"/></svg>',
-  heart:_S+'<path d="M12 20s-6.8-4.3-6.8-9.2A3.6 3.6 0 0 1 12 8.4a3.6 3.6 0 0 1 6.8 2.4C18.8 15.7 12 20 12 20z"/></svg>',
-  note:_S+'<rect x="5" y="4.5" width="14" height="15.5" rx="2.3"/><line x1="8.5" y1="9" x2="15.5" y2="9"/><line x1="8.5" y1="12.5" x2="15.5" y2="12.5"/><line x1="8.5" y1="16" x2="12.5" y2="16"/></svg>',
-  dumbbell:_S+'<path d="M3 9v6M6 7.5v9M18 7.5v9M21 9v6M6 12h12"/></svg>',
-  arrowRight:_S+'<line x1="4" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>'
+  moon:S+'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5z"/></svg>',
+  bag:S+'<path d="M6.5 8.5h11l-1 11h-9z"/><path d="M9 8.5a3 3 0 0 1 6 0"/></svg>',
+  snack:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="22" height="22"><circle cx="12" cy="12" r="8.3"/><circle cx="9.2" cy="10" r="1"/><circle cx="14" cy="9.3" r="1"/><circle cx="13.5" cy="14" r="1"/></svg>',
+  run:S+'<circle cx="14.5" cy="5" r="2"/><path d="M5 20l3.2-4.2 2.3 2 2-5.3 3 2.2h2.5"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="5 12.5 10 17.5 19 6.5"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="20" height="20"><rect x="4" y="5.5" width="16" height="15" rx="2.5"/><line x1="4" y1="9.5" x2="20" y2="9.5"/><line x1="8.5" y1="3.5" x2="8.5" y2="7"/><line x1="15.5" y1="3.5" x2="15.5" y2="7"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M12 4l1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M5 7h14"/><path d="M9.5 7V5h5v2"/><path d="M7 7l1 13h8l1-13"/></svg>',
+  flame:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 3c1 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1.5.5-2.5 1-3 .3 1 1 1.5 1.5 1.5C10 8 11 5.5 12 3z"/></svg>',
+  trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M9 16h6M10 20h4M12 13v3"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.3"/><path d="M15.5 8.5V6.3A2.3 2.3 0 0 0 13.2 4H6.3A2.3 2.3 0 0 0 4 6.3v6.9a2.3 2.3 0 0 0 2.3 2.3h2.2"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 20s-6.8-4.3-6.8-9.2A3.6 3.6 0 0 1 12 8.4a3.6 3.6 0 0 1 6.8 2.4C18.8 15.7 12 20 12 20z"/></svg>'
 };
+function FACE(k,hex,sz){sz=sz||28;const e="rgba(0,0,0,0.5)";const f={great:`<circle cx="8.8" cy="10.5" r="1.4" fill="${e}"/><circle cx="15.2" cy="10.5" r="1.4" fill="${e}"/><path d="M7.5 13.5 Q12 18.5 16.5 13.5" stroke="${e}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,good:`<circle cx="8.8" cy="10.8" r="1.3" fill="${e}"/><circle cx="15.2" cy="10.8" r="1.3" fill="${e}"/><path d="M8.5 14 Q12 17 15.5 14" stroke="${e}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,soso:`<circle cx="8.8" cy="11" r="1.2" fill="${e}"/><circle cx="15.2" cy="11" r="1.2" fill="${e}"/><line x1="8.5" y1="14.8" x2="15.5" y2="14.8" stroke="${e}" stroke-width="1.5" stroke-linecap="round"/>`,down:`<circle cx="8.8" cy="10.5" r="1.3" fill="${e}"/><circle cx="15.2" cy="10.5" r="1.3" fill="${e}"/><path d="M8.5 16 Q12 12.5 15.5 16" stroke="${e}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,stress:`<path d="M7.2 9 Q8.8 10.5 10.5 9" stroke="${e}" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M13.5 9 Q15.2 10.5 16.8 9" stroke="${e}" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="9" cy="11" r="1.2" fill="${e}"/><circle cx="15" cy="11" r="1.2" fill="${e}"/><path d="M8.5 15.5 Q12 13 15.5 15.5" stroke="${e}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`};return `<svg viewBox="0 0 24 24" width="${sz}" height="${sz}"><circle cx="12" cy="12" r="11" fill="${hex}"/>${f[k]||""}</svg>`;}
 
-function loadState(){try{return JSON.parse(localStorage.getItem(KEY));}catch{return null;}}
-function saveState(){localStorage.setItem(KEY,JSON.stringify(state));}
-function todayStr(){return new Date().toISOString().split("T")[0];}
-function fmtDate(s){const d=new Date(s+"T00:00:00");return `${d.getMonth()+1}/${d.getDate()}`;}
-function daysSince(s){return Math.floor((Date.now()-new Date(s+"T00:00:00"))/86400000)+1;}
+/* ─── Helpers ─── */
+function load(){try{return JSON.parse(localStorage.getItem(KEY));}catch{return null;}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function today(){return new Date().toISOString().split("T")[0];}
+function activeDate(){return editDate||today();}
+function daysSince(s){return Math.floor((Date.now()-new Date(s+"T00:00:00"))/864e5)+1;}
+function blankLog(d){return {date:d,weight:"",lateNight:null,delivery:null,sugar:null,cardio:"",strength:false,mood:"",triggers:[],note:""};}
+function getLog(d){return state.logs.find(l=>l.date===d)||blankLog(d);}
+function setLog(d,f){const l=getLog(d);state.logs=state.logs.filter(x=>x.date!==d);state.logs.push({...l,...f});save();}
+function doneCount(l){let n=0;if(l.lateNight===false)n++;if(l.delivery===false)n++;if(l.sugar===false)n++;if((l.cardio&&l.cardio!=="0")||l.strength)n++;return n;}
+function streak(){let n=0,d=new Date();while(true){const s=d.toISOString().split("T")[0];const l=state.logs.find(x=>x.date===s);if(!l)break;if(doneCount(l)<4)break;n++;d.setDate(d.getDate()-1);}return n;}
+function totals(){let full=0,nights=0,deliv=0,snack=0,workout=0;state.logs.forEach(l=>{if(doneCount(l)===4)full++;if(l.lateNight===false)nights++;if(l.delivery===false)deliv++;if(l.sugar===false)snack++;if((l.cardio&&l.cardio!=="0")||l.strength)workout++;});return {full,nights,deliv,snack,workout,total:state.logs.length};}
+function weeklyRate(){const days=[];for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split("T")[0]);}const lg=days.map(d=>state.logs.find(l=>l.date===d)).filter(Boolean);if(!lg.length)return 0;const f=lg.filter(l=>doneCount(l)===4).length;return Math.round(f/lg.length*100);}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1900);}
 
-function completeToday(){
-  showToast("오늘 기록이 저장됐습니다");
-  refreshAutoLine();
-}
+const MOODS=[{k:"great",l:"아주좋음",h:"#1FD9A0"},{k:"good",l:"좋음",h:"#5BC0FF"},{k:"soso",l:"보통",h:"#F5AA3C"},{k:"down",l:"우울",h:"#A78BFA"},{k:"stress",l:"스트레스",h:"#FF5A36"}];
+const TRIGGERS=["스트레스","피곤","술자리","외로움","지루함","보상심리"];
 
-function editPastLog(dateStr){
-  // switch to a past date entry mode
-  state._editDate=dateStr;
-  saveState();
-  renderContent();
-}
-function clearEditDate(){
-  delete state._editDate;
-  saveState();
-  renderContent();
-}
-function getActiveDate(){return state._editDate||todayStr();}
-function getActiveLog(){const t=getActiveDate();return state.logs.find(l=>l.date===t)||{date:t,weight:"",lateNight:false,delivery:false,sugar:false,cardio:"",cardioType:"",intensity:"",strength:false,mood:"",note:""};} 
-function getStreak(logs){let n=0,d=new Date();while(true){const s=d.toISOString().split("T")[0];const l=logs.find(x=>x.date===s);if(!l)break;if(l.lateNight||l.delivery||l.sugar)break;n++;d.setDate(d.getDate()-1);}return n;}
-function getTotals(logs){
-  let nights=0,deliveries=0,snacks=0,workouts=0,cleanDays=0;
-  logs.forEach(l=>{
-    if(l.lateNight===false)nights++;
-    if(l.delivery===false)deliveries++;
-    if(l.sugar===false)snacks++;
-    if((l.cardio&&l.cardio!=="0")||l.strength)workouts++;
-    if(!l.lateNight&&!l.delivery&&!l.sugar)cleanDays++;
-  });
-  return {nights,deliveries,snacks,workouts,cleanDays,total:logs.length};
-}
-function getTodayLog(){const t=todayStr();return state.logs.find(l=>l.date===t)||{date:t,weight:"",lateNight:false,delivery:false,sugar:false,cardio:"",cardioType:"",intensity:"",strength:false,mood:"",note:""};}
-function updateLog(fields){const t=todayStr();const tl=getTodayLog();state.logs=state.logs.filter(l=>l.date!==t);state.logs.push({...tl,...fields});saveState();renderHeader();renderContent();}
-function updateLogSilent(fields){const t=todayStr();const tl=getTodayLog();state.logs=state.logs.filter(l=>l.date!==t);state.logs.push({...tl,...fields});saveState();}
-function updateLogForDate(dt,fields){const tl=state.logs.find(l=>l.date===dt)||{date:dt,weight:"",lateNight:false,delivery:false,sugar:false,cardio:"",cardioType:"",intensity:"",strength:false,mood:"",note:""};state.logs=state.logs.filter(l=>l.date!==dt);state.logs.push({...tl,...fields});saveState();renderHeader();renderContent();}
-function updateLogSilentForDate(dt,fields){const tl=state.logs.find(l=>l.date===dt)||{date:dt,weight:"",lateNight:false,delivery:false,sugar:false,cardio:"",cardioType:"",intensity:"",strength:false,mood:"",note:""};state.logs=state.logs.filter(l=>l.date!==dt);state.logs.push({...tl,...fields});saveState();}
-function updateAlarm(id,fields){state.alarms=state.alarms.map(a=>a.id===id?{...a,...fields}:a);saveState();renderContent();}
-function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}
-function autoResize(ta){ta.style.height="auto";ta.style.height=Math.max(90,ta.scrollHeight)+"px";}
-function initTextareas(){document.querySelectorAll("textarea.note-ta").forEach(ta=>{autoResize(ta);ta.addEventListener("input",()=>autoResize(ta));});}
-
-// Colored SVG face icons for each mood
-function FACE(k,hex,sz){
-  sz=sz||30;
-  const ey="rgba(0,0,0,0.52)"; // eye & mouth color
-  const faces={
-    great:`<circle cx="8.8" cy="10.5" r="1.4" fill="${ey}"/><circle cx="15.2" cy="10.5" r="1.4" fill="${ey}"/><path d="M7.5 13.5 Q12 18.5 16.5 13.5" stroke="${ey}" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="8" cy="14.5" r="1" fill="${ey}" opacity="0.5"/>`,
-    good: `<circle cx="8.8" cy="10.8" r="1.3" fill="${ey}"/><circle cx="15.2" cy="10.8" r="1.3" fill="${ey}"/><path d="M8.5 14 Q12 17.5 15.5 14" stroke="${ey}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
-    soso: `<circle cx="8.8" cy="11" r="1.2" fill="${ey}"/><circle cx="15.2" cy="11" r="1.2" fill="${ey}"/><line x1="8.5" y1="14.8" x2="15.5" y2="14.8" stroke="${ey}" stroke-width="1.5" stroke-linecap="round"/>`,
-    down: `<circle cx="8.8" cy="10.5" r="1.3" fill="${ey}"/><circle cx="15.2" cy="10.5" r="1.3" fill="${ey}"/><path d="M8.5 16 Q12 12.5 15.5 16" stroke="${ey}" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M7.5 8.5 Q8.5 7.5 9.5 9" stroke="${ey}" stroke-width="1.2" fill="none" stroke-linecap="round"/>`,
-    stress:`<path d="M7.2 9 Q8.8 10.5 10.5 9" stroke="${ey}" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M13.5 9 Q15.2 10.5 16.8 9" stroke="${ey}" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="9" cy="11" r="1.2" fill="${ey}"/><circle cx="15" cy="11" r="1.2" fill="${ey}"/><path d="M8.5 15.5 Q12 13 15.5 15.5" stroke="${ey}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
-  };
-  return `<svg viewBox="0 0 24 24" width="${sz}" height="${sz}" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="${hex}"/>${faces[k]||""}</svg>`;
-}
-
-setInterval(()=>{if(!state)return;const now=new Date();const hm=`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;state.alarms.forEach(a=>{if(!a.enabled)return;const k=a.id+hm;if(a.time===hm&&!alarmFired[k]){alarmFired[k]=true;if("Notification" in window&&Notification.permission==="granted")new Notification("⏰ "+a.label,{body:a.time});}});if(now.getMinutes()===0)alarmFired={};},30000);
-
-// ONBOARDING
-let obStep=0,obName="",obStartW="",obGoalW="";
+/* ═══════════ Onboarding ═══════════ */
+let obStep=0,obName="",obSW="",obGW="";
 function renderOB(){
-  const card=document.getElementById("ob-card");
-  const obm=document.getElementById("ob-mark");if(obm)obm.innerHTML=MUSCLEMAN(20,"var(--accent)");
-  const bigMark=document.getElementById("ob-big-mark");if(bigMark)bigMark.innerHTML=MUSCLEMAN(88,"var(--accent)");
+  const c=document.getElementById("onboard");
   if(obStep===0){
-    card.innerHTML=`<div style="font-size:14px;color:var(--text-secondary);text-align:center;line-height:1.8;margin-bottom:24px;">굶어서 벌주는 앱이 아닙니다.<br>스트레스와 야식에 빼앗긴 몸을<br><span style="color:var(--accent);font-weight:650;">다시 회수</span>하는 앱입니다.</div>
-      <button class="ob-btn" onclick="obStep=1;renderOB()">시작하기</button>`;
+    c.innerHTML=`<div class="ob-hero">
+      <div class="ob-mark">${MARK(52)}</div>
+      <div class="ob-title">몸회수</div>
+      <div class="ob-tag">굶어서 벌주는 앱이 아닙니다.<br>스트레스와 야식에 빼앗긴 몸을<br><b style="color:var(--ember)">다시 회수</b>하는 앱입니다.</div>
+    </div>
+    <button class="ob-btn" onclick="obStep=1;renderOB()">시작하기</button>`;
   }else if(obStep===1){
-    card.innerHTML=`<div class="ob-step">1 / 3</div><div class="ob-title">이름이 뭐예요?</div><div class="ob-desc">앱이 당신에게 맞춰집니다</div>
-      <div class="ob-label">이름 또는 닉네임</div>
-      <input class="ob-input" id="ob-name" placeholder="예: 성안" value="${obName}" oninput="obName=this.value"/>
-      <button class="ob-btn" onclick="if(obName.trim()){obStep=2;renderOB();}">다음</button>`;
-    setTimeout(()=>document.getElementById("ob-name")?.focus(),100);
+    c.innerHTML=`<div class="ob-hero"></div><div class="ob-card">
+      <div class="ob-step">1 / 2</div><div class="ob-q">이름이 뭐예요?</div><div class="ob-desc">앱이 당신에게 맞춰집니다</div>
+      <div class="ob-lbl">이름 또는 닉네임</div>
+      <input class="ob-input" id="obn" placeholder="예: 성안" value="${obName}" oninput="obName=this.value"/>
+      <button class="ob-btn" onclick="if(obName.trim()){obStep=2;renderOB()}">다음</button>
+    </div>`;
+    setTimeout(()=>document.getElementById("obn")?.focus(),100);
   }else if(obStep===2){
-    card.innerHTML=`<div class="ob-step">2 / 3</div><div class="ob-title">현재 몸무게와 목표를</div><div class="ob-desc">솔직하게 — 여기선 판단 없습니다</div>
-      <div class="ob-label">현재 체중 (kg)</div>
-      <input class="ob-input" id="ob-sw" type="number" placeholder="예: 99" value="${obStartW}" oninput="obStartW=this.value"/>
-      <div class="ob-label">목표 체중 (kg)</div>
-      <input class="ob-input" id="ob-gw" type="number" placeholder="예: 85" value="${obGoalW}" oninput="obGoalW=this.value" style="margin-bottom:0;"/>
-      <button class="ob-btn" onclick="if(obStartW&&obGoalW){obStep=3;renderOB();}">다음</button>`;
-  }else if(obStep===3){
-    const diff=(parseFloat(obStartW)-parseFloat(obGoalW)).toFixed(1);
-    card.innerHTML=`<div class="ob-step">3 / 3</div><div style="display:flex;justify-content:center;margin-bottom:14px;">${MUSCLEMAN(48,"var(--accent)")}</div>
-      <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:16px;">${obName}님, 회수 시작입니다</div>
-      <div class="ob-summary">
-        <div class="ob-row"><span style="color:var(--muted);">현재</span><span style="font-weight:700;">${obStartW} kg</span></div>
-        <div class="ob-row"><span style="color:var(--muted);">목표</span><span style="color:var(--mint);font-weight:700;">${obGoalW} kg</span></div>
-        <div class="ob-row"><span style="color:var(--muted);">회수할 무게</span><span style="color:var(--amber);font-weight:700;">${diff} kg</span></div>
-      </div>
-      <button class="ob-btn" onclick="startApp()">회수 시작하기</button>`;
+    c.innerHTML=`<div class="ob-hero"></div><div class="ob-card">
+      <div class="ob-step">2 / 2</div><div class="ob-q">현재 몸무게와 목표를</div><div class="ob-desc">솔직하게 — 여기선 판단 없습니다</div>
+      <div class="ob-lbl">현재 체중 (kg)</div>
+      <input class="ob-input" id="obs" type="number" placeholder="99" value="${obSW}" oninput="obSW=this.value"/>
+      <div class="ob-lbl">목표 체중 (kg)</div>
+      <input class="ob-input" id="obg" type="number" placeholder="85" value="${obGW}" oninput="obGW=this.value" style="margin-bottom:0"/>
+      <button class="ob-btn" onclick="if(obSW&&obGW)startApp()">회수 시작하기</button>
+    </div>`;
   }
 }
 function startApp(){
-  state={name:obName.trim(),startW:parseFloat(obStartW),goalW:parseFloat(obGoalW),startDate:todayStr(),logs:[],
-    alarms:[
-      {id:1,label:"기상 + 체중 측정",time:"07:00",enabled:true},
-      {id:2,label:"첫 식사 체크",time:"12:00",enabled:true},
-      {id:3,label:"저녁 식사 마무리",time:"19:30",enabled:true},
-      {id:4,label:"주방 닫기·양치",time:"20:00",enabled:true},
-      {id:5,label:"야식 충동 체크",time:"21:00",enabled:true},
-    ]};
-  saveState();initApp();
+  state={name:obName.trim(),startW:parseFloat(obSW),goalW:parseFloat(obGW),startDate:today(),logs:[],
+    isPremium:false,aiUsed:0,aiWeek:weekStart(),
+    alarms:[{id:1,label:"기상 + 체중 측정",time:"07:00",on:true},{id:2,label:"저녁 식사 마무리",time:"19:30",on:true},{id:3,label:"주방 닫기·양치",time:"21:00",on:true}]};
+  save();initApp();
 }
+function weekStart(){const d=new Date();const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.toISOString().split("T")[0];}
 function initApp(){
   document.getElementById("onboard").style.display="none";
   document.getElementById("app").style.display="block";
   document.getElementById("tabbar").style.display="flex";
-  renderHeader();switchTab("home");
+  document.getElementById("hdr-mark").innerHTML=MARK(15);
+  renderTabbar();switchTab("home");
 }
 
+/* ═══════════ Tabbar ═══════════ */
+const TABS=[["home","오늘",'<ellipse cx="12" cy="9.5" rx="6.2" ry="6.8"/><line x1="12" y1="16.3" x2="12" y2="21.5"/><line x1="9" y1="21.5" x2="15" y2="21.5"/>'],["friends","친구",'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c0-3 2.6-5.2 5.5-5.2s5.5 2.2 5.5 5.2"/><path d="M16.2 5.3a3 3 0 0 1 0 5.9"/>'],["tip","코칭",'<path d="M11 3l1.7 4.3L17 9l-4.3 1.7L11 15l-1.7-4.3L5 9l4.3-1.7z"/>'],["trend","추세",'<polyline points="3 16 9 10 13 14 21 6"/><polyline points="15 6 21 6 21 12"/>'],["log","기록",'<rect x="5" y="4.5" width="14" height="16" rx="2.5"/><line x1="8.5" y1="11.5" x2="15.5" y2="11.5"/><line x1="8.5" y1="15" x2="13" y2="15"/>'],["alarm","알람",'<path d="M6 9.5a6 6 0 0 1 12 0c0 4.8 1.8 6 1.8 6H4.2S6 14.3 6 9.5z"/><path d="M10 19a2 2 0 0 0 4 0"/>']];
+function renderTabbar(){
+  document.getElementById("tabbar").innerHTML=TABS.map(([k,l,p])=>`<button class="tab ${k===tab?"on":""}" onclick="switchTab('${k}')"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg><small>${l}</small></button>`).join("");
+}
+function switchTab(t){tab=t;editDate=null;renderTabbar();renderHeader();render();window.scrollTo(0,0);}
 function renderHeader(){
-  const streak=getStreak(state.logs);
-  const dayN=daysSince(state.startDate);
-  const latestW=[...state.logs].filter(l=>l.weight).sort((a,b)=>b.date.localeCompare(a.date))[0]?.weight;
-  const pct=latestW?Math.max(0,Math.min(100,((state.startW-latestW)/(state.startW-state.goalW))*100)):0;
-  document.getElementById("hdr-day").textContent=`${state.name} · 회수 ${dayN}일차`;
-  const bm=document.getElementById("brand-mark");if(bm)bm.innerHTML=MIRROR(20,"var(--accent)");
-  const sEl=document.getElementById("hdr-streak");
-  sEl.innerHTML=streak>0?`<span class="ss-strong">${streak}일째</span> 이어가는 중`:`오늘부터 다시 시작`;
-  document.getElementById("pm-cur").textContent=latestW||"–";
-  document.getElementById("pm-goal").textContent=state.goalW;
-  document.getElementById("pm-bar").style.width=pct+"%";
-  document.getElementById("pm-start-lbl").textContent=state.startW+" kg 출발";
-  document.getElementById("pm-pct").textContent=pct.toFixed(1)+"% 회수";
-  renderSuccessHero();
-  renderTotals();
-  renderDateStrip();
+  document.getElementById("hdr-day").textContent=`회수 ${daysSince(state.startDate)}일차 · ${dowKr(today())} ${md(today())}`;
 }
+function dowKr(s){return ["일","월","화","수","목","금","토"][new Date(s+"T00:00:00").getDay()];}
+function md(s){const d=new Date(s+"T00:00:00");return `${d.getMonth()+1}/${d.getDate()}`;}
 
-function renderDateStrip(){
-  const el=document.getElementById("date-strip-wrap");
-  if(!el)return;
-  if(currentTab!=="home"){el.style.display="none";return;}
-  el.style.display="block";
-  const activeDate=getActiveDate();
-  const isToday=activeDate===todayStr();
-  const dateOptions=[];
-  for(let i=4;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dateOptions.push(d.toISOString().split("T")[0]);}
-  const chips=dateOptions.map(dt=>{
-    const d=new Date(dt+"T00:00:00");
-    const dow=["일","월","화","수","목","금","토"][d.getDay()];
-    const lbl=`${d.getMonth()+1}/${d.getDate()}`;
-    const sel=dt===activeDate;
-    const isT=dt===todayStr();
-    return `<button class="date-chip ${sel?"sel":""} ${isT?"today":""}" onclick="${isT?"clearEditDate()":"editPastLog('"+dt+"')"}"><span class="date-dow">${dow}</span><span class="date-md">${lbl}</span></button>`;
-  }).join("");
-  const banner=!isToday?`<div class="edit-banner"><span class="eb-ic">${ICON.pencil}</span>${(()=>{const d=new Date(activeDate+"T00:00:00");return `${d.getMonth()+1}월 ${d.getDate()}일`;})()} 기록 수정 중 · <button onclick="clearEditDate()" style="color:var(--warm);text-decoration:underline;font-weight:600;">오늘로</button></div>`:"";
-  el.innerHTML=`<div class="date-strip">${chips}
-    <button class="date-cal" onclick="var i=document.getElementById('dateCalInput');i.showPicker?i.showPicker():i.click()">${ICON.calendar}</button>
-    <input type="date" id="dateCalInput" max="${todayStr()}" value="${activeDate}" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" onchange="if(this.value){this.value===todayStr()?clearEditDate():editPastLog(this.value);}"/>
-  </div>${banner}`;
-}
-
-function renderTotals(){
-  const el=document.getElementById("totals-strip");
-  if(!el)return;
-  if(currentTab!=="home"){el.style.display="none";return;}
-  el.style.display="flex";
-  const t=getTotals(state.logs);
-  const items=[
-    {num:t.cleanDays,lbl:"완전 회수",accent:true},
-    {num:t.nights,lbl:"야식 참음"},
-    {num:t.deliveries,lbl:"배달 안 함"},
-    {num:t.workouts,lbl:"운동"},
-  ];
-  el.innerHTML=items.map((b,i)=>`<div class="tl-item"><span class="tl-num ${b.accent?"accent":""}">${b.num}</span><span class="tl-lbl">${b.lbl}</span></div>${i<items.length-1?'<span class="tl-div"></span>':''}`).join("");
-}
-
-function renderSuccessHero(){
-  const tl=getTodayLog();
-  const dayN=daysSince(state.startDate);
-  document.getElementById("sh-recover").textContent=`회수 ${dayN}일차`;
-  const checks=[
-    {done:tl.lateNight===false,icon:ICON.moon,lbl:"야식"},
-    {done:tl.delivery===false,icon:ICON.bag,lbl:"배달"},
-    {done:tl.sugar===false,icon:ICON.snack,lbl:"간식"},
-    {done:(tl.cardio&&tl.cardio!=="0")||tl.strength,icon:ICON.run,lbl:"운동"},
-  ];
-  const doneCount=checks.filter(c=>c.done).length;
-  document.getElementById("sh-num").textContent=doneCount;
-  document.getElementById("sh-checks").innerHTML=checks.map(c=>`
-    <div class="sh-check ${c.done?"done":""}">
-      <div class="sh-check-icon">${c.done?ICON.check:c.icon}</div>
-      <div class="sh-check-lbl">${c.lbl}</div>
-    </div>`).join("");
-  const msgEl=document.getElementById("sh-msg");
-  if(doneCount===4){msgEl.style.display="block";msgEl.innerHTML="오늘 몸을 완전히 회수했습니다.";}
-  else if(doneCount>=1){msgEl.style.display="block";msgEl.innerHTML="완벽하지 않아도 기록을 끊지 않았습니다.";}
-  else{msgEl.style.display="none";}
-}
-
-function switchTab(tab){
-  currentTab=tab;
-  ["home","friends","tip","chart","log","alarm"].forEach(t=>{
-    document.getElementById("tl-"+t).classList.toggle("active",t===tab);
-    document.getElementById("td-"+t).style.display=t===tab?"block":"none";
-  });
-  // home-only top cards
-  const homeOnly=tab==="home";
-  const sh=document.getElementById("success-hero");
-  const pm=document.getElementById("progress-mini");
-  if(sh)sh.style.display=homeOnly?"block":"none";
-  if(pm)pm.style.display=homeOnly?"block":"none";
-  renderTotals();
-  renderDateStrip();
-  renderContent();
-}
-function renderContent(){
+function render(){
   const c=document.getElementById("content");
-  if(currentTab==="home")c.innerHTML=renderHome();
-  else if(currentTab==="friends")c.innerHTML=renderFriends();
-  else if(currentTab==="tip")c.innerHTML=renderTip();
-  else if(currentTab==="chart")c.innerHTML=renderChart();
-  else if(currentTab==="log")c.innerHTML=renderLog();
-  else if(currentTab==="alarm")c.innerHTML=renderAlarm();
-  requestAnimationFrame(initTextareas);
+  if(tab==="home")c.innerHTML=renderHome();
+  else if(tab==="friends")c.innerHTML=renderFriends();
+  else if(tab==="tip")c.innerHTML=renderTip();
+  else if(tab==="trend")c.innerHTML=renderTrend();
+  else if(tab==="log")c.innerHTML=renderLog();
+  else if(tab==="alarm")c.innerHTML=renderAlarm();
+  if(tab==="home"){placeDots();gaugeTick(false);}
 }
 
+/* ═══════════ HOME ═══════════ */
 function renderHome(){
-  const tl=getActiveLog();
-  const activeDate=getActiveDate();
-  const isToday=activeDate===todayStr();
-  const logs=[...state.logs].filter(l=>l.weight).sort((a,b)=>b.date.localeCompare(a.date));
-  const prevW=logs.length>1?logs[1].weight:null;
-  const diffHtml=tl.weight&&prevW&&tl.weight<prevW?`<span class="weight-diff">▼ ${(prevW-tl.weight).toFixed(1)}kg</span>`:"";
-
-  // reframed habits (not judgment)
-  const habits=[
-    {k:"lateNight",label:"야식",okLabel:"야식 없이 마감",badLabel:"계획 밖 섭취",offCls:"on-red"},
-    {k:"delivery",label:"배달음식",okLabel:"계획한 식사 완료",badLabel:"오늘은 배달",offCls:"on-amber"},
-    {k:"sugar",label:"당류·간식",okLabel:"간식 양 조절",badLabel:"조절 어려움",offCls:"on-yellow"},
-  ];
-  const habitHtml=habits.map(h=>`
-    <div class="habit-group">
-      <div class="habit-name">${h.label}</div>
-      <div class="chip-row">
-        <button class="chip ${tl[h.k]===false?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{'${h.k}':false});showToast('잘 회수했습니다')">${h.okLabel}</button>
-        <button class="chip ${tl[h.k]===true?h.offCls:""}" onclick="updateLogForDate('${activeDate}',{'${h.k}':true})">${h.badLabel}</button>
-      </div>
-    </div>`).join("");
-
-  const cardioVals=["0","20","30","40","60"];
-  const cardioHtml=cardioVals.map(v=>`<button class="ex-chip ${tl.cardio===v?"on":""}" onclick="updateLogForDate('${activeDate}',{cardio:'${v}'})">${v==="0"?"쉼":v+"분"}</button>`).join("");
-  const cardioTypes=["걷기","러닝","실내자전거","실외자전거","기타"];
-  const typeHtml=cardioTypes.map(t=>`<button class="ex-chip ${tl.cardioType===t?"on-blue":""}" onclick="updateLogForDate('${activeDate}',{cardioType:'${t}'})">${t}</button>`).join("");
-  const intensities=["가볍게","보통","강하게"];
-  const intHtml=intensities.map(i=>`<button class="ex-chip ${tl.intensity===i?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{intensity:'${i}'})">${i}</button>`).join("");
-
-  const moods=[
-    {k:"great",lbl:"아주 좋음",col:"var(--accent)",hex:"#43D6A5"},
-    {k:"good", lbl:"좋음",     col:"var(--blue)",  hex:"#75A7FF"},
-    {k:"soso", lbl:"보통",     col:"var(--warm)",  hex:"#F5AA3C"},
-    {k:"down", lbl:"우울",     col:"var(--purple)",hex:"#A78BFA"},
-    {k:"stress",lbl:"스트레스",col:"var(--red)",   hex:"#FF6F78"},
-  ];
-  const moodHtml=`<div class="mood-row">${moods.map(m=>`<button class="mood-chip ${tl.mood===m.k?"sel":""}" style="${tl.mood===m.k?`background:${m.hex}22;border-color:${m.hex};`:""}" onclick="updateLogForDate('${activeDate}',{mood:'${m.k}'})"><span class="mood-face">${FACE(m.k,m.hex,26)}</span><span class="mood-lbl" style="${tl.mood===m.k?`color:${m.hex};font-weight:700;`:""}">${m.lbl}</span></button>`).join("")}</div>`;
+  const d=activeDate(),isToday=d===today(),l=getLog(d);
+  const done=doneCount(l);
+  // 날짜 스트립
+  const ds=[];for(let i=4;i>=0;i--){const x=new Date();x.setDate(x.getDate()-i);ds.push(x.toISOString().split("T")[0]);}
+  const strip=ds.map(dt=>{const lg=state.logs.find(l=>l.date===dt);const full=lg&&doneCount(lg)===4;const isT=dt===today();const sel=dt===d;return `<button class="date ${full?"done":""} ${isT?"today":""}" onclick="${isT?"editDate=null":"editDate='"+dt+"'"};render()"><small>${dowKr(dt)}</small><b>${new Date(dt+"T00:00:00").getDate()}</b></button>`;}).join("");
+  const banner=!isToday?`<div class="edit-banner">${new Date(d+"T00:00:00").getMonth()+1}월 ${new Date(d+"T00:00:00").getDate()}일 기록 수정 중 · <button onclick="editDate=null;render()">오늘로</button></div>`:"";
+  // 체크
+  const checks=[["lateNight","야식","없이 마감",ICON.moon],["delivery","배달","계획대로",ICON.bag],["sugar","간식","탭해서 체크",ICON.snack],["__ex","운동","탭해서 체크",ICON.run]];
+  const checkHtml=checks.map(([k,name,hint,ic])=>{
+    let isDone=k==="__ex"?((l.cardio&&l.cardio!=="0")||l.strength):l[k]===false;
+    return `<button class="chk ${isDone?"done":""}" onclick="toggleCheck('${k}')"><div class="chk-ic">${ic}</div><div><div class="chk-name">${name}</div><div class="chk-hint">${isDone?(k==="__ex"?"오늘 운동함":"잘 회수했어요"):hint}</div></div></button>`;
+  }).join("");
+  // 기분
+  const moodHtml=MOODS.map(m=>`<button class="mood ${l.mood===m.k?"sel":""}" style="${l.mood===m.k?`border-color:${m.h}`:""}" onclick="setLog(activeDate(),{mood:'${m.k}'});render()"><span class="mood-face">${FACE(m.k,m.h,28)}</span><small style="${l.mood===m.k?`color:${m.h}`:""}">${m.l}</small></button>`).join("");
+  const trigHtml=TRIGGERS.map(t=>`<button class="trig ${(l.triggers||[]).includes(t)?"on":""}" onclick="toggleTrig('${t}')">${t}</button>`).join("");
+  // 체중 추세
+  const ws=[...state.logs].filter(x=>x.weight).sort((a,b)=>a.date.localeCompare(b.date));
+  const latestW=ws.length?ws[ws.length-1].weight:null;
+  const week7=ws.slice(-7),prev7=ws.slice(-14,-7);
+  const avg=a=>a.reduce((s,x)=>s+x.weight,0)/a.length;
+  const wc=week7.length&&prev7.length?(avg(week7)-avg(prev7)):null;
+  const trendChip=wc!==null?(wc<0?`<span class="wtrend">▼ ${Math.abs(wc).toFixed(1)}kg 7일</span>`:`<span class="wtrend" style="color:var(--ember);background:var(--ember-glow)">▲ ${wc.toFixed(1)}kg</span>`):"";
+  const spark=ws.length>1?buildSpark(ws.slice(-7).map(x=>x.weight)):"";
 
   return `
+    <div class="dates">${strip}<button class="date-cal" onclick="pickDate()">${ICON.cal}</button></div>
+    ${banner}
+    <div class="hero"><div class="gwrap">
+      <svg width="260" height="260" viewBox="0 0 260 260" style="transform:rotate(-90deg);overflow:visible">
+        <defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF7A4D"/><stop offset="100%" stop-color="#FF3D1A"/></linearGradient></defs>
+        <circle class="gtrack" cx="130" cy="130" r="114" fill="none" stroke-width="16"/>
+        <circle class="gfill" id="gfill" cx="130" cy="130" r="114" fill="none" stroke-width="16" stroke-dasharray="716" stroke-dashoffset="${716*(1-done/4)}"/>
+      </svg>
+      <div class="gdots" id="gdots"></div>
+      <div class="gcenter"><div class="gnum tabular" id="gnum">${done}</div><div class="gof">오늘의 회수</div><div class="glabel" id="glabel">${["오늘 시작해볼까요","한 걸음 뗐어요","절반 왔어요","거의 다 왔어요","오늘 완전 회수!"][done]}</div></div>
+    </div></div>
+    <div class="checks">${checkHtml}</div>
+    <div class="fold"><span class="fold-line">아래로 내리면 기록</span></div>
+
+    <div class="sec-lbl">오늘 기분 · 무너진 이유</div>
     <div class="card">
-      <div class="card-label">체중</div>
-      <div class="weight-row">
-        <input class="weight-input" type="number" step="0.1" min="30" max="300" value="${tl.weight||""}" placeholder="–" oninput="updateLogSilentForDate('${activeDate}',{weight:parseFloat(this.value)||''});renderHeader();" onblur="renderContent();"/>
-        <span class="weight-unit">kg</span>${diffHtml}
-      </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:10px;text-align:center;">하루 숫자보다 7일 추세를 봅니다</div>
+      <div class="mood-row">${moodHtml}</div>
+      <div class="trig-lbl">오늘 흔들렸다면, 왜였나요? <span style="color:var(--txt-3)">(선택)</span></div>
+      <div class="trig-row">${trigHtml}</div>
+      <textarea class="note-ta" placeholder="한 줄 메모 — 오늘 어땠는지 적어보세요" oninput="setLog(activeDate(),{note:this.value})">${l.note||""}</textarea>
     </div>
+
+    <div class="sec-lbl">체중</div>
     <div class="card">
-      <div class="card-label">회수 체크</div>
-      ${habitHtml}
+      <div class="wtop"><div class="wval"><input class="wnum-input tabular" type="number" step="0.1" placeholder="–" value="${l.weight||""}" oninput="setLog(activeDate(),{weight:parseFloat(this.value)||''})"/><span class="wunit">kg</span></div>${trendChip}</div>
+      ${spark}
+      <div style="font-size:12px;color:var(--txt-3);text-align:center;margin-top:12px">하루 숫자보다 7일 추세를 봅니다</div>
     </div>
+
+    <div class="sec-lbl">운동 상세</div>
     <div class="card">
-      <div class="card-label">운동</div>
-      <div class="ex-label">유산소 시간</div>
-      <div class="ex-row">${cardioHtml}</div>
-      <div class="ex-label">운동 종류</div>
-      <div class="ex-row">${typeHtml}</div>
-      <div class="ex-label">강도</div>
-      <div class="ex-row" style="margin-bottom:14px;">${intHtml}</div>
-      <div class="ex-label">근력 운동</div>
-      <div class="chip-row">
-        <button class="chip ${!tl.strength?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{strength:false})">안 함</button>
-        <button class="chip ${tl.strength?"on-mint":""}" onclick="updateLogForDate('${activeDate}',{strength:true})">했다</button>
-      </div>
+      <div class="trig-lbl">유산소 시간</div>
+      <div class="trig-row">${["0","20","30","40","60"].map(v=>`<button class="trig ${l.cardio===v?"on":""}" onclick="setLog(activeDate(),{cardio:'${v}'});render()">${v==="0"?"쉼":v+"분"}</button>`).join("")}${(l.cardio&&!["0","20","30","40","60"].includes(l.cardio))?`<button class="trig on" onclick="setLog(activeDate(),{cardio:'0'});render()">${l.cardio}분</button>`:`<button class="trig" onclick="customCardio()" style="padding:8px 12px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>`}</div>
+      <div class="trig-lbl">근력 운동</div>
+      <div class="trig-row"><button class="trig ${!l.strength?"on":""}" onclick="setLog(activeDate(),{strength:false});render()">안 함</button><button class="trig ${l.strength?"on":""}" onclick="setLog(activeDate(),{strength:true});render()">했다</button></div>
     </div>
-    <div class="card">
-      <div class="card-label">기분 · 일기</div>
-      ${moodHtml}
-      <textarea class="note-ta" placeholder="오늘 하루 어땠나요? 무엇 때문에 그런 기분이 들었는지 적어보세요..." oninput="updateLogSilentForDate('${activeDate}',{note:this.value})">${tl.note||""}</textarea>
-    </div>
-    <button onclick="completeToday()" class="btn-primary" style="margin-bottom:12px;">기록 완료</button>
-    <div id="ai-auto"></div>`;
+
+    <div id="ai-slot"></div>
+    <button class="btn-primary" onclick="completeToday()">기록 완료</button>
+  `;
+}
+function placeDots(){
+  const dots=document.getElementById("gdots");if(!dots)return;
+  const done=doneCount(getLog(activeDate()));
+  dots.innerHTML="";const R=114,cx=130,cy=130,SZ=260;
+  for(let i=0;i<4;i++){const ang=(-90+i*90)*Math.PI/180;const x=cx+R*Math.cos(ang),y=cy+R*Math.sin(ang);const el=document.createElement("div");el.className="gd"+(i<done?" on":"");el.style.left=(x/SZ*100)+"%";el.style.top=(y/SZ*100)+"%";el.style.transform="translate(-50%,-50%)";dots.appendChild(el);}
+}
+function gaugeTick(animate){
+  const l=getLog(activeDate()),done=doneCount(l);
+  const num=document.getElementById("gnum"),lbl=document.getElementById("glabel"),fill=document.getElementById("gfill");
+  if(!fill)return;
+  fill.style.strokeDashoffset=716*(1-done/4);
+  num.textContent=done;
+  lbl.textContent=["오늘 시작해볼까요","한 걸음 뗐어요","절반 왔어요","거의 다 왔어요","오늘 완전 회수!"][done];
+  if(done===4){fill.style.stroke="#1FD9A0";num.style.webkitTextFillColor="#1FD9A0";lbl.style.color="#1FD9A0";}
+  else{fill.style.stroke="url(#eg)";num.style.webkitTextFillColor="transparent";lbl.style.color="#FF5A36";}
+  placeDots();
+}
+function toggleCheck(k){
+  const l=getLog(activeDate());
+  if(k==="__ex"){const has=(l.cardio&&l.cardio!=="0")||l.strength;setLog(activeDate(),has?{cardio:"0",strength:false}:{strength:true});}
+  else{setLog(activeDate(),{[k]:l[k]===false?null:false});}
+  render();
+}
+function toggleTrig(t){
+  const l=getLog(activeDate());let tr=[...(l.triggers||[])];
+  if(tr.includes(t))tr=tr.filter(x=>x!==t);else tr.push(t);
+  setLog(activeDate(),{triggers:tr});render();
+}
+function completeToday(){toast("오늘 기록이 저장됐습니다");refreshAI();}
+function pickDate(){const i=document.createElement("input");i.type="date";i.max=today();i.value=activeDate();i.style.position="fixed";i.style.opacity="0";document.body.appendChild(i);i.onchange=()=>{if(i.value){editDate=i.value===today()?null:i.value;render();}i.remove();};(i.showPicker?i.showPicker():i.click());}
+function buildSpark(arr){
+  if(arr.length<2)return "";
+  const mn=Math.min(...arr)-0.5,mx=Math.max(...arr)+0.5,W=320,H=44;
+  const pts=arr.map((w,i)=>({x:i/(arr.length-1)*W,y:H-((w-mn)/(mx-mn))*H}));
+  const poly=pts.map(p=>`${p.x.toFixed(0)},${p.y.toFixed(0)}`).join(" ");
+  const area=`${poly} ${W},${H} 0,${H}`;
+  return `<svg class="spark" viewBox="0 0 320 44" preserveAspectRatio="none"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF5A36" stop-opacity="0.22"/><stop offset="100%" stop-color="#FF5A36" stop-opacity="0"/></linearGradient></defs><polygon points="${area}" fill="url(#sg)"/><polyline points="${poly}" fill="none" stroke="#FF5A36" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${pts[pts.length-1].x.toFixed(0)}" cy="${pts[pts.length-1].y.toFixed(0)}" r="4" fill="#FF5A36"/></svg>`;
 }
 
-// auto AI line on home
-async function refreshAutoLine(){
-  const el=document.getElementById("ai-auto");
-  if(!el)return;
-  const tl=getTodayLog();
-  const anyLog=tl.lateNight!==false||tl.delivery!==false||tl.sugar!==false||tl.weight||tl.cardio||tl.strength;
-  el.innerHTML=`<div class="ai-line"><div class="ai-line-head"><span class="ai-line-badge">오늘의 한 줄</span></div><div class="ai-line-loading">분석 중...</div></div>`;
-  const streak=getStreak(state.logs);
-  const prompt=`다이어트 코치로서, 사용자 ${state.name}의 오늘 기록을 보고 딱 한 줄로 격려+내일 행동 하나를 한국어로 제시. 50자 이내. 따옴표나 마크다운 없이 문장만.
-오늘: 야식${tl.lateNight?"먹음":"없이마감"}, 배달${tl.delivery?"먹음":"안함"}, 간식${tl.sugar?"많음":"조절"}, 유산소${tl.cardio||"0"}분, 근력${tl.strength?"함":"안함"}. 연속회수 ${streak}일.`;
+/* AI line */
+function apiKey(){return localStorage.getItem("mh_apikey")||"";}
+async function callClaude(messages,maxTokens){
+  const key=apiKey();
+  const headers={"Content-Type":"application/json"};
+  if(key){headers["x-api-key"]=key;headers["anthropic-version"]="2023-06-01";headers["anthropic-dangerous-direct-browser-access"]="true";}
+  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:maxTokens,messages})});
+  if(!res.ok)throw new Error("api "+res.status);
+  return await res.json();
+}
+async function refreshAI(){
+  const slot=document.getElementById("ai-slot");if(!slot)return;
+  const l=getLog(today());
+  if(!apiKey()){slot.innerHTML=`<div class="ai"><div class="ai-head">${ICON.spark}오늘의 한 줄</div><div class="ai-txt" style="font-size:13px;color:var(--txt-2)">AI 코칭을 쓰려면 설정에서 API 키를 등록하세요. 키 없이도 모든 기록 기능은 작동합니다.</div></div>`;return;}
+  slot.innerHTML=`<div class="ai"><div class="ai-head">${ICON.spark}오늘의 한 줄</div><div class="ai-loading">분석 중...</div></div>`;
+  const moodKr={great:"아주좋음",good:"좋음",soso:"보통",down:"우울",stress:"스트레스"};
+  const prompt=`다이어트 코치로서 ${state.name}의 오늘 기록을 보고 딱 한 줄(50자 이내)로 격려+내일 행동 하나를 한국어로. 따옴표·마크다운 없이.
+오늘: 야식${l.lateNight===false?"없이마감":"먹음"}, 배달${l.delivery===false?"안함":"먹음"}, 간식${l.sugar===false?"조절":"많음"}, 운동${(l.cardio&&l.cardio!=="0")||l.strength?"함":"안함"}, 기분${moodKr[l.mood]||"미입력"}, 이유${(l.triggers||[]).join("·")||"없음"}. 연속${streak()}일.`;
   try{
-    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:200,messages:[{role:"user",content:prompt}]})});
-    const d=await res.json();
+    const d=await callClaude([{role:"user",content:prompt}],200);
     const txt=(d.content?.find(c=>c.type==="text")?.text||"").trim().replace(/^["']|["']$/g,"");
-    if(document.getElementById("ai-auto")&&currentTab==="home"){
-      el.innerHTML=`<div class="ai-line"><div class="ai-line-head"><span class="ai-line-badge">오늘의 한 줄</span></div><div class="ai-line-text">${txt}</div><button class="ai-detail-btn" onclick="switchTab('tip');doTip()">자세한 코칭 받기 →</button></div>`;
-    }
-  }catch(e){
-    if(document.getElementById("ai-auto"))el.innerHTML=`<div class="ai-line"><div class="ai-line-text" style="color:var(--muted);font-size:13px;">기록을 더 남기면 맞춤 한 줄이 나타납니다.</div></div>`;
-  }
+    if(document.getElementById("ai-slot")&&tab==="home")slot.innerHTML=`<div class="ai"><div class="ai-head">${ICON.spark}오늘의 한 줄</div><div class="ai-txt">${txt}</div><button class="ai-cta" onclick="switchTab('tip');doTip()">자세한 코칭 받기 →</button></div>`;
+  }catch(e){if(document.getElementById("ai-slot"))slot.innerHTML=`<div class="ai"><div class="ai-txt" style="color:var(--txt-2);font-size:13px">한 줄 코칭을 불러오지 못했어요. 설정에서 API 키를 확인해 주세요.</div></div>`;}
 }
 
+/* ═══════════ COACHING ═══════════ */
+function remainAI(){if(state.isPremium)return "무제한";const w=weekStart();if(state.aiWeek!==w){state.aiWeek=w;state.aiUsed=0;save();}return Math.max(0,3-(state.aiUsed||0));}
 function renderTip(){
-  const header=`<div class="coach-head"><h2 class="page-title">다음 한 걸음</h2><p class="page-sub">최근 기록에서 오늘 가장 쉬운 행동 하나를 찾아드립니다.</p></div>`;
-  if(tipLoading){
-    return `${header}<div class="coach-empty"><div class="coach-mark">${MIRROR(42,"var(--accent)")}</div><p class="coach-empty-text">오늘 기록을 천천히 살펴보는 중...</p></div>`;
-  }
+  const badge=state.isPremium?`<span class="coach-badge">무제한</span>`:`<span class="coach-badge">이번 주 ${remainAI()}회</span>`;
+  const head=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 24px 4px"><div class="ptitle" style="padding:0">다음 한 걸음</div>${badge}</div><div class="psub">기분과 식습관의 연결을 보고, 오늘 가장 쉬운 행동 하나를 찾아드립니다.</div>`;
+  // 트리거 인사이트
+  const insight=buildInsight();
+  if(tipLoading)return head+(insight||"")+`<div class="coach-empty"><div>${MARK(42,"var(--ember)")}</div><p>오늘 기록을 천천히 살펴보는 중...</p></div>`;
   if(tipData){
     const tips=[tipData.팁1,tipData.팁2,tipData.팁3].filter(Boolean);
-    return `${header}<div class="coach-letter">
-      <p class="cl-lead">${tipData.오늘평가||""}</p>
-      ${tips.map(t=>`<div class="cl-action"><div class="cl-action-title">${t.제목||""}</div><div class="cl-action-body">${t.내용||""}</div></div>`).join("")}
-      ${tipData.내일한마디?`<p class="cl-close">${tipData.내일한마디}</p>`:""}
-    </div>
-    <button class="btn-secondary" style="margin-top:18px;" onclick="doTip()">다시 제안 받기</button>`;
+    return head+(insight||"")+`<div class="coach-letter"><p class="cl-lead">${tipData.오늘평가||""}</p>${tips.map(t=>`<div class="cl-act"><div class="cl-act-t">${t.제목||""}</div><div class="cl-act-b">${t.내용||""}</div></div>`).join("")}${tipData.내일한마디?`<p class="cl-close">${tipData.내일한마디}</p>`:""}</div><button class="btn-sec" onclick="doTip()">다시 제안 받기</button>`;
   }
-  return `${header}<div class="coach-empty">
-    <div class="coach-mark">${MIRROR(46,"var(--accent)")}</div>
-    <p class="coach-empty-text">오늘 기록을 바탕으로<br>가장 부담 없는 행동 하나를 제안해 드릴게요.</p>
-    <button class="btn-primary" style="max-width:260px;" onclick="doTip()">오늘의 제안 받기</button>
-  </div>`;
+  return head+(insight||"")+`<div class="coach-empty"><div>${MARK(46,"var(--ember)")}</div><p>오늘 기록을 바탕으로<br>가장 부담 없는 행동 하나를 제안해 드릴게요.</p><button class="btn-primary" style="max-width:260px;margin:0" onclick="doTip()">오늘의 제안 받기</button></div>`;
+}
+function buildInsight(){
+  // 트리거-무너짐 패턴 분석
+  const withTrig=state.logs.filter(l=>(l.triggers||[]).length>0);
+  if(withTrig.length<3)return "";
+  const count={};
+  withTrig.forEach(l=>{const broke=doneCount(l)<4;if(broke)(l.triggers||[]).forEach(t=>count[t]=(count[t]||0)+1);});
+  const top=Object.entries(count).sort((a,b)=>b[1]-a[1])[0];
+  if(!top||top[1]<2)return "";
+  return `<div class="insight"><div class="insight-h">${ICON.spark}발견된 패턴</div><div class="insight-t"><b style="color:var(--mint)">${top[0]}</b> 느낀 날에 회수가 무너지는 경우가 많았어요. 그 순간을 미리 알아채면 절반은 이긴 겁니다.</div></div>`;
+}
+async function doTip(){
+  if(!apiKey()){toast("설정에서 API 키를 먼저 등록하세요");openSettings();return;}
+  if(!state.isPremium&&remainAI()<=0){toast("이번 주 무료 코칭을 다 썼어요");return;}
+  if(!state.isPremium){state.aiUsed=(state.aiUsed||0)+1;save();}
+  tipLoading=true;tipData=null;render();
+  const moodKr={great:"아주좋음",good:"좋음",soso:"보통",down:"우울",stress:"스트레스"};
+  const recent=[...state.logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7).map(l=>({날짜:l.date,기분:moodKr[l.mood]||"미입력",이유:(l.triggers||[]).join("·")||"없음",야식:l.lateNight===false?"마감":"먹음",배달:l.delivery===false?"안함":"먹음",간식:l.sugar===false?"조절":"많음",운동:(l.cardio&&l.cardio!=="0")||l.strength?"함":"안함",메모:l.note||""}));
+  const prompt=`당신은 따뜻하지만 솔직한 다이어트 코치입니다. 사용자 ${state.name}, 목표 ${state.goalW}kg, 연속 ${streak()}일.
+최근 기록: ${JSON.stringify(recent)}
+기분과 식습관의 연결(스트레스→야식 등)을 살펴봐 주세요. 기록은 심판이 아니라 패턴 발견 도구입니다. 내일 행동 하나에 집중. 반드시 아래 JSON만 (마크다운 없이):
+{"오늘평가":"한문장 격려","팁1":{"제목":"짧게","내용":"내일 행동 하나"},"팁2":{"제목":"짧게","내용":"1~2문장"},"팁3":{"제목":"짧게","내용":"1~2문장"},"내일한마디":"동기부여 한문장"}`;
+  try{
+    const d=await callClaude([{role:"user",content:prompt}],1000);
+    const txt=d.content?.find(c=>c.type==="text")?.text||"";
+    tipData=JSON.parse(txt.replace(/```json|```/g,"").trim());
+  }catch(e){toast("코칭 생성 오류 — API 키 확인");}
+  tipLoading=false;render();
 }
 
-function avg(arr){return arr.reduce((a,b)=>a+b,0)/arr.length;}
-function renderChart(){
-  const allW=[...state.logs].filter(l=>l.weight).sort((a,b)=>a.date.localeCompare(b.date));
-  const latestW=allW.length?allW[allW.length-1].weight:null;
-  const last7=allW.slice(-7).map(l=>l.weight);
-  const prev7=allW.slice(-14,-7).map(l=>l.weight);
-  const avg7=last7.length?avg(last7):null;
-  const prevAvg7=prev7.length?avg(prev7):null;
-  const weekChange=avg7&&prevAvg7?(avg7-prevAvg7):null;
+/* ═══════════ Settings ═══════════ */
+function openSettings(){
+  const ov=document.createElement("div");ov.id="settings";
+  ov.style.cssText="position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;justify-content:center;";
+  const hasKey=!!apiKey();
+  ov.innerHTML=`
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6)" onclick="closeSettings()"></div>
+    <div style="position:relative;width:100%;max-width:430px;background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:26px 24px calc(26px + env(safe-area-inset-bottom));max-height:90dvh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><div style="font-size:20px;font-weight:780">설정</div><button onclick="closeSettings()" style="color:var(--txt-3)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div>
 
-  const logs=allW.slice(-14);
-  let svgHtml="";
-  if(logs.length<2){svgHtml=`<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">2일 이상 기록하면 추세가 나타납니다</div>`;}
-  else{
-    const weights=logs.map(l=>l.weight);
-    const mn=Math.min(...weights,state.goalW)-1,mx=Math.max(...weights)+1;
-    const H=80,W=300;
-    const mapped=logs.map((l,i,arr)=>({x:arr.length===1?W/2:(i/(arr.length-1))*W,y:H-((l.weight-mn)/(mx-mn))*H,lbl:fmtDate(l.date),w:l.weight}));
-    const goalY=H-((state.goalW-mn)/(mx-mn))*H;
-    const poly=mapped.map(p=>`${p.x},${p.y}`).join(" ");
-    const area=[...mapped,{x:mapped[mapped.length-1].x,y:H},{x:mapped[0].x,y:H}].map(p=>`${p.x},${p.y}`).join(" ");
-    svgHtml=`<div class="chart-wrap"><svg width="${W}" height="${H+22}" style="display:block;margin:0 auto;overflow:visible;">
-      <defs><linearGradient id="lg" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#F5AA3C" stop-opacity="0.13"/><stop offset="100%" stop-color="#F5AA3C" stop-opacity="0"/></linearGradient></defs>
-      <line x1="0" y1="${goalY}" x2="${W}" y2="${goalY}" stroke="#43D6A5" stroke-width="1.2" stroke-dasharray="5 4"/>
-      <text x="${W}" y="${goalY-4}" fill="#43D6A5" font-size="9" text-anchor="end">목표 ${state.goalW}</text>
-      <polyline points="${area}" fill="url(#lg)" stroke="none"/>
-      <polyline points="${poly}" fill="none" stroke="#F5AA3C" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-      ${mapped.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="${i===mapped.length-1?5:3}" fill="${i===mapped.length-1?"#F5AA3C":"#161F2E"}" stroke="#F5AA3C" stroke-width="${i===mapped.length-1?0:1.5}"/>${i===mapped.length-1?`<text x="${p.x}" y="${p.y-10}" fill="#F5AA3C" font-size="10" text-anchor="middle" font-weight="700">${p.w}</text>`:""}${(i===0||i===mapped.length-1)?`<text x="${p.x}" y="${H+16}" fill="#707B8D" font-size="9" text-anchor="middle">${p.lbl}</text>`:""}`).join("")}
-    </svg></div>`;
-  }
-  const rem=latestW?(latestW-state.goalW).toFixed(1)+" kg":"–";
-  const wcHtml=weekChange!==null?(weekChange<0?`<span style="color:var(--mint);font-weight:700;">▼ ${Math.abs(weekChange).toFixed(1)} kg</span>`:`<span style="color:var(--amber);font-weight:700;">▲ ${weekChange.toFixed(1)} kg</span>`):"–";
+      <div class="sec-lbl" style="padding:0 0 8px">AI 코칭 (선택)</div>
+      <div class="card" style="margin:0 0 18px">
+        <div style="font-size:13px;color:var(--txt-2);line-height:1.6;margin-bottom:12px">AI 코칭을 쓰려면 Anthropic API 키를 등록하세요. 키는 이 기기에만 저장되며 서버로 전송되지 않습니다. ${hasKey?'<b style="color:var(--mint)">현재 등록됨 ✓</b>':""}</div>
+        <input id="apikey-in" type="password" placeholder="sk-ant-..." value="${apiKey()}" style="width:100%;background:var(--surface-up);border:1px solid var(--line-hi);border-radius:var(--r-md);color:var(--txt);font-size:13px;padding:12px 14px;outline:none;margin-bottom:10px"/>
+        <button class="btn-primary" style="margin:0;width:100%;min-height:46px;font-size:14px" onclick="saveKey()">키 저장</button>
+        <a href="https://console.anthropic.com/settings/keys" target="_blank" style="display:block;text-align:center;font-size:12px;color:var(--txt-3);margin-top:10px;text-decoration:none">API 키 발급받기 →</a>
+      </div>
 
-  // cumulative recovery stats
-  const t=getTotals(state.logs);
-  const total=t.total||1;
-  const pctOf=(n)=>Math.round((n/total)*100);
-  const weeklyRate=getWeeklyRate(state.logs);
-  const streak=getStreak(state.logs);
+      <div class="sec-lbl" style="padding:0 0 8px">데이터 백업</div>
+      <div class="card" style="margin:0 0 18px">
+        <div style="font-size:13px;color:var(--txt-2);line-height:1.6;margin-bottom:12px">기록을 파일로 내보내 보관하세요. 기기를 바꾸거나 브라우저를 정리해도 복원할 수 있습니다.</div>
+        <button class="btn-sec" style="margin:0;width:100%" onclick="exportData()">내 기록 내보내기</button>
+        <button class="btn-sec" style="margin:10px 0 0;width:100%" onclick="document.getElementById('import-file').click()">백업 파일 불러오기</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)"/>
+      </div>
 
-  const sumHtml=`<div class="trend-sum">기록 <b>${t.total}</b>일 · 완전 회수 <b>${t.cleanDays}</b>일 · 연속 <b>${streak}</b>일</div>`;
-
-  const bars=[
-    {name:"야식 참음",n:t.nights},
-    {name:"배달 안 함",n:t.deliveries},
-    {name:"간식 조절",n:t.snacks},
-    {name:"운동",n:t.workouts},
-  ];
-  const barsHtml=bars.map(b=>{
-    const p=pctOf(b.n);
-    return `<div class="stat-bar-item">
-      <div class="stat-bar-head"><span class="stat-bar-name">${b.name}</span><span class="stat-bar-val">${b.n}일 · ${p}%</span></div>
-      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${p}%;"></div></div>
+      <div class="sec-lbl" style="padding:0 0 8px">정보</div>
+      <div class="card" style="margin:0">
+        <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:var(--txt-2)">이름</span><span>${state.name}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:var(--txt-2)">목표 체중</span><span>${state.goalW} kg</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--txt-2)">총 기록</span><span>${state.logs.length}일</span></div>
+      </div>
     </div>`;
-  }).join("");
-
-  // monthly calendar ring view (achievement-based, behavior checks)
-  const now=new Date();
-  const yr=now.getFullYear(), mo=now.getMonth();
-  const firstDay=new Date(yr,mo,1);
-  const startOffset=(firstDay.getDay()+6)%7; // Mon=0
-  const daysInMonth=new Date(yr,mo+1,0).getDate();
-  const todayStrV=todayStr();
-  const dayCells=[];
-  for(let i=0;i<startOffset;i++)dayCells.push(`<div class="cal-cell empty"></div>`);
-  for(let d=1;d<=daysInMonth;d++){
-    const ds=`${yr}-${String(mo+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    const log=state.logs.find(l=>l.date===ds);
-    let done=0;
-    if(log){
-      if(log.lateNight===false)done++;
-      if(log.delivery===false)done++;
-      if(log.sugar===false)done++;
-      if((log.cardio&&log.cardio!=="0")||log.strength)done++;
-    }
-    const pct=done/4;
-    const C=88;
-    const isT=ds===todayStrV;
-    const isFuture=ds>todayStrV;
-    const ringColor=done===4?"#43D6A5":done>0?"#F5AA3C":"#2a3344";
-    const ring=isFuture?"":`<svg width="100%" height="100%" viewBox="0 0 38 38"><circle cx="19" cy="19" r="14" fill="none" stroke="#1c2536" stroke-width="3.2"/>${log?`<circle cx="19" cy="19" r="14" fill="none" stroke="${ringColor}" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}" transform="rotate(-90 19 19)"/>`:""}</svg>`;
-    dayCells.push(`<div class="cal-cell ${isT?"today":""}">
-      <div class="cal-ring">${ring}</div>
-      <div class="cal-num ${isFuture?"future":""}">${d}</div>
-    </div>`);
-  }
-  const monthName=`${yr}년 ${mo+1}월`;
-  const dows=["월","화","수","목","금","토","일"];
-  const calendarBlock=`<div class="cal-block">
-    <div class="cal-title">${monthName}</div>
-    <div class="cal-dow-row">${dows.map(w=>`<div class="cal-dow">${w}</div>`).join("")}</div>
-    <div class="cal-grid">${dayCells.join("")}</div>
-    <div class="cal-legend">
-      <span><span class="cal-dot" style="background:#43D6A5;"></span>완전 회수</span>
-      <span><span class="cal-dot" style="background:#F5AA3C;"></span>일부</span>
-      <span><span class="cal-dot" style="background:#2a3344;"></span>미기록</span>
-    </div>
-  </div>`;
-
-  return `
-  <h2 class="page-title">추세</h2>
-  ${calendarBlock}
-  <div class="card">
-    <div class="card-label">체중 추세</div>${svgHtml}
-    <div class="trend-weights">
-      <div class="tw-item"><span class="tw-lbl">오늘</span><span class="tw-val">${latestW?latestW+" kg":"–"}</span></div>
-      <div class="tw-item"><span class="tw-lbl">7일 평균</span><span class="tw-val">${avg7?avg7.toFixed(1)+" kg":"–"}</span></div>
-      <div class="tw-item"><span class="tw-lbl">지난주 대비</span><span class="tw-val">${wcHtml}</span></div>
-    </div>
-    <div class="chart-note">하루 숫자보다 7일 추세를 봅니다</div>
-  </div>
-  <div class="card">
-    <div class="card-label">회수 통계</div>
-    ${sumHtml}
-    <div class="stat-caption">최근 ${t.total}일 기록 기준</div>
-    ${barsHtml}
-    <div class="stat-week"><span>최근 7일 성공률</span><b style="color:${weeklyRate>=70?"var(--accent)":weeklyRate>=40?"var(--warm)":"var(--text-secondary)"};">${weeklyRate}%</b></div>
-  </div>`;
+  document.body.appendChild(ov);
+}
+function closeSettings(){document.getElementById("settings")?.remove();}
+function saveKey(){const v=document.getElementById("apikey-in").value.trim();if(v)localStorage.setItem("mh_apikey",v);else localStorage.removeItem("mh_apikey");toast("저장됐습니다");closeSettings();if(tab==="home")refreshAI();}
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");
+  a.href=url;a.download=`몸회수_백업_${today()}.json`;a.click();URL.revokeObjectURL(url);
+  toast("백업 파일을 내보냈어요");
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{try{const data=JSON.parse(e.target.result);if(data.logs&&data.name){state=data;save();closeSettings();switchTab("home");toast("기록을 복원했어요");}else toast("올바른 백업 파일이 아닙니다");}catch{toast("파일을 읽을 수 없습니다");}};
+  reader.readAsText(file);
+}
+function customCardio(){
+  const v=prompt("유산소 운동 시간(분)을 입력하세요");
+  if(v&&!isNaN(v)&&parseInt(v)>0){setLog(activeDate(),{cardio:String(parseInt(v))});render();}
 }
 
+/* ═══════════ TREND ═══════════ */
+function renderTrend(){
+  const t=totals(),wr=weeklyRate(),st=streak();
+  const ws=[...state.logs].filter(x=>x.weight).sort((a,b)=>a.date.localeCompare(b.date));
+  const latestW=ws.length?ws[ws.length-1].weight:null;
+  const week7=ws.slice(-7),prev7=ws.slice(-14,-7);
+  const avg=a=>a.length?a.reduce((s,x)=>s+x.weight,0)/a.length:null;
+  const a7=avg(week7),pa7=avg(prev7),wc=a7&&pa7?a7-pa7:null;
+  // 캘린더
+  const now=new Date(),yr=now.getFullYear(),mo=now.getMonth();
+  const first=new Date(yr,mo,1),off=(first.getDay()+6)%7,dim=new Date(yr,mo+1,0).getDate();
+  let cells="";for(let i=0;i<off;i++)cells+=`<div class="cal-cell empty"></div>`;
+  for(let dd=1;dd<=dim;dd++){const ds=`${yr}-${String(mo+1).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;const lg=state.logs.find(l=>l.date===ds);const dn=lg?doneCount(lg):0;const isT=ds===today();const fut=ds>today();const col=dn===4?"#1FD9A0":dn>0?"#FF5A36":"#222C40";const C=88;const ring=fut?"":`<svg width="100%" height="100%" viewBox="0 0 38 38" style="max-width:40px;max-height:40px"><circle cx="19" cy="19" r="14" fill="none" stroke="#1A2233" stroke-width="3"/>${lg?`<circle cx="19" cy="19" r="14" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-dn/4)}" transform="rotate(-90 19 19)"/>`:""}</svg>`;cells+=`<div class="cal-cell ${isT?"today":""}"><div class="cal-ring">${ring}</div><div class="cal-num ${fut?"fut":""}">${dd}</div></div>`;}
+  // 배지
+  const badges=[{n:"첫 회수",d:"기록 시작",ic:ICON.flame,unlock:t.total>=1},{n:"7일 연속",d:"연속 7일 완전회수",ic:ICON.flame,unlock:st>=7},{n:"완전 회수 10일",d:"누적 10일",ic:ICON.trophy,unlock:t.full>=10},{n:"30일 여정",d:"30일 기록",ic:ICON.trophy,unlock:t.total>=30}];
+  return `
+    <div class="ptitle">추세</div>
+    <div class="psub">하루의 숫자가 아니라, 쌓인 흐름을 봅니다.</div>
+    <div class="cal-block">
+      <div class="cal-head"><div class="cal-title">${yr}년 ${mo+1}월</div></div>
+      <div class="cal-dow"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
+      <div class="cal-grid">${cells}</div>
+      <div class="cal-legend"><span><span class="cal-dot" style="background:#1FD9A0"></span>완전 회수</span><span><span class="cal-dot" style="background:#FF5A36"></span>일부</span><span><span class="cal-dot" style="background:#222C40"></span>미기록</span></div>
+    </div>
+    <div class="sec-lbl">체중 추세</div>
+    <div class="card">
+      ${ws.length>1?buildSpark(ws.slice(-14).map(x=>x.weight)):'<div style="color:var(--txt-3);font-size:13px;text-align:center;padding:16px 0">2일 이상 기록하면 추세가 보입니다</div>'}
+      <div class="tw-row"><div class="tw"><small>오늘</small><b>${latestW?latestW+" kg":"–"}</b></div><div class="tw"><small>7일 평균</small><b>${a7?a7.toFixed(1)+" kg":"–"}</b></div><div class="tw"><small>지난주 대비</small><b style="color:${wc!==null&&wc<0?"var(--mint)":"var(--ember)"}">${wc!==null?(wc<0?"▼ ":"▲ ")+Math.abs(wc).toFixed(1)+" kg":"–"}</b></div></div>
+    </div>
+    <div class="sec-lbl">회수 통계 · 최근 ${t.total}일</div>
+    <div class="card">
+      <div style="font-size:14px;color:var(--txt-2);margin-bottom:16px">완전 회수 <b style="color:var(--mint)">${t.full}</b>일 · 연속 <b style="color:var(--ember)">${st}</b>일 · 이번 주 <b>${wr}%</b></div>
+      ${[["야식 참음",t.nights],["배달 안 함",t.deliv],["간식 조절",t.snack],["운동",t.workout]].map(([n,v])=>{const p=t.total?Math.round(v/t.total*100):0;return `<div class="stat-bar"><div class="stat-bh"><span style="color:var(--txt-2)">${n}</span><b>${v}일 · ${p}%</b></div><div class="stat-bg"><div class="stat-fill" style="width:${p}%"></div></div></div>`;}).join("")}
+    </div>
+    <div class="sec-lbl">배지</div>
+    <div class="badges">${badges.map(b=>`<div class="badge ${b.unlock?"":"locked"}"><div class="badge-ic">${b.ic}</div><div><div class="badge-n">${b.n}</div><div class="badge-d">${b.d}</div></div></div>`).join("")}</div>
+  `;
+}
+
+/* ═══════════ LOG ═══════════ */
 function renderLog(){
   const sorted=[...state.logs].sort((a,b)=>b.date.localeCompare(a.date));
-  if(!sorted.length)return `<div class="log-empty">아직 기록이 없습니다.<br>오늘 탭에서 첫 회수를 시작해보세요.</div>`;
-  return `<div class="log-list">`+sorted.map(l=>{
-    const checks=[l.lateNight===false,l.delivery===false,l.sugar===false,((l.cardio&&l.cardio!=="0")||l.strength)];
-    const done=checks.filter(Boolean).length;
-    const clean=!l.lateNight&&!l.delivery&&!l.sugar;
-    const ex=(l.cardio&&l.cardio!=="0")?`${l.cardioType||"운동"} ${l.cardio}분`:(l.strength?"근력 운동":"");
-    const status=`${done}개 완료${ex?" · "+ex:""}`;
-    const dlabel=(()=>{const d=new Date(l.date+"T00:00:00");const w=["일","월","화","수","목","금","토"][d.getDay()];return `${d.getMonth()+1}월 ${d.getDate()}일 ${w}`;})();
-    const chips=[
-      l.lateNight===false?'<span class="lg-chip ok">야식</span>':'',
-      l.delivery===false?'<span class="lg-chip ok">배달</span>':'',
-      l.sugar===false?'<span class="lg-chip ok">간식</span>':'',
-      l.strength?'<span class="lg-chip">근력</span>':'',
-    ].filter(Boolean).join("");
-    return `<div class="log-row ${clean?"clean":"partial"}">
-      <div class="lg-main">
-        <div class="lg-date">${dlabel}</div>
-        <div class="lg-status">${status}</div>
-        ${chips?`<div class="lg-chips">${chips}</div>`:""}
-        ${l.note?`<div class="lg-note">${l.note}</div>`:""}
-      </div>
-      <div class="lg-weight">${l.weight?`${l.weight}<span>kg</span>`:'<span class="lg-noweight">–</span>'}</div>
-    </div>`;
-  }).join("")+`</div>`;
-}
-
-function getWeeklyRate(logs){
-  // last 7 days, success = no lateNight/delivery/sugar (clean day)
-  const days=[];
-  for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split("T")[0]);}
-  const logged=days.map(dt=>logs.find(l=>l.date===dt)).filter(Boolean);
-  if(!logged.length)return 0;
-  const clean=logged.filter(l=>!l.lateNight&&!l.delivery&&!l.sugar).length;
-  return Math.round((clean/logged.length)*100);
-}
-
-function rateColor(r){return r>=70?"var(--mint)":r>=40?"var(--amber)":"var(--red)";}
-
-// DEMO friend data — replaced by real server sync at launch
-const DEMO_FRIENDS=[
-  {name:"와이프",avatar:"🌸",bg:"#F8717122",rate:86,streak:12,online:true},
-  {name:"동생",avatar:"🐯",bg:"#60A5FA22",rate:57,streak:4,online:true},
-  {name:"러닝메이트 J",avatar:"🏃",bg:"#2DD4A022",rate:71,streak:8,online:false},
-];
-
-function renderFriends(){
-  const myRate=getWeeklyRate(state.logs);
-  const myStreak=getStreak(state.logs);
-  const myCode="MH"+(state.name?state.name.length:2)+"7K"+(state.startDate?state.startDate.slice(-2):"04");
-  const me={name:state.name+" (나)",rate:myRate,streak:myStreak,isMe:true};
-  const friends=[me,...DEMO_FRIENDS];
-  const cardsHtml=friends.map(f=>{
-    const days=Math.max(0,Math.min(7,Math.round((f.rate/100)*7)));
-    const todayLogged=f.isMe?state.logs.some(l=>l.date===todayStr()):!!f.online;
-    return `<div class="friend-row ${f.isMe?"me":""}">
-      <div class="friend-av">${f.isMe?MIRROR(20,"var(--accent)"):f.avatar}</div>
-      <div class="friend-mid">
-        <div class="friend-nm">${f.name}</div>
-        <div class="friend-meta">${todayLogged?"오늘 기록함":"아직 오늘 기록 전"} · 이번 주 ${days}일</div>
-        <div class="friend-prog"><div class="friend-prog-fill" style="width:${(days/7)*100}%"></div></div>
-      </div>
-      ${f.isMe?"":`<button class="friend-cheer" onclick="showToast('응원을 보냈어요')">${ICON.heart}<span>응원</span></button>`}
-    </div>`;
+  if(!sorted.length)return `<div class="ptitle">기록</div><div class="log-empty">아직 기록이 없습니다.<br>오늘 탭에서 첫 회수를 시작해보세요.</div>`;
+  const moodKr={great:"😊",good:"🙂",soso:"😐",down:"😔",stress:"😣"};
+  const rows=sorted.map(l=>{
+    const dn=doneCount(l),cls=dn===4?"":dn>0?"part":"none";
+    const ex=(l.cardio&&l.cardio!=="0")?`운동 ${l.cardio}분`:(l.strength?"근력":"");
+    const dlabel=`${new Date(l.date+"T00:00:00").getMonth()+1}월 ${new Date(l.date+"T00:00:00").getDate()}일 ${dowKr(l.date)}`;
+    const chips=[l.lateNight===false?'<span class="log-chip ok">야식</span>':"",l.delivery===false?'<span class="log-chip ok">배달</span>':"",l.sugar===false?'<span class="log-chip ok">간식</span>':"",l.strength?'<span class="log-chip">근력</span>':"",...(l.triggers||[]).map(t=>`<span class="log-chip trig">${t}</span>`)].filter(Boolean).join("");
+    return `<div class="log-row ${cls}"><div class="log-main"><div class="log-date">${dlabel}</div><div class="log-status">${dn}/4 회수${ex?" · "+ex:""}</div>${chips?`<div class="log-chips">${chips}</div>`:""}${l.note?`<div class="log-note">${l.note}</div>`:""}</div><div class="log-w">${l.weight?`${l.weight}<span>kg</span>`:'<span style="color:var(--txt-3)">–</span>'}</div></div>`;
   }).join("");
+  return `<div class="ptitle">기록</div><div class="psub">${sorted.length}일의 회수 여정</div><div class="log-list">${rows}</div>`;
+}
+
+/* ═══════════ FRIENDS ═══════════ */
+const DEMO=[{n:"와이프",a:"🌸",rate:86,on:true},{n:"동생",a:"🐯",rate:57,on:true},{n:"러닝메이트 J",a:"🏃",rate:71,on:false}];
+function renderFriends(){
+  const myRate=weeklyRate(),code="MH"+(state.name?state.name.length:2)+"7K"+state.startDate.slice(-2);
+  const all=[{n:state.name+" (나)",rate:myRate,me:true},...DEMO];
+  const rows=all.map(f=>{const days=Math.round(f.rate/100*7);const logged=f.me?state.logs.some(l=>l.date===today()):f.on;return `<div class="frow ${f.me?"me":""}"><div class="fav">${f.me?MARK(20,"var(--ember)"):f.a}</div><div class="fmid"><div class="fnm">${f.n}</div><div class="fmeta">${logged?"오늘 기록함":"아직 오늘 기록 전"} · 이번 주 ${days}일</div><div class="fprog"><div class="fprog-fill" style="width:${days/7*100}%"></div></div></div>${f.me?"":`<button class="fcheer" onclick="toast('응원을 보냈어요')">${ICON.heart}응원</button>`}</div>`;}).join("");
   return `
-    <h2 class="page-title">함께 이어가는 중</h2>
-    <p class="page-sub">서로의 기록을 가볍게 응원해요.</p>
-    <div class="share-row">
-      <div class="share-info"><div class="share-lbl">내 친구 코드</div><div class="share-code">${myCode}</div></div>
-      <button class="share-copy" onclick="if(navigator.clipboard)navigator.clipboard.writeText('${myCode}');showToast('코드를 복사했어요')">${ICON.copy}<span>복사</span></button>
-    </div>
-    <div class="friend-list">${cardsHtml}</div>
-    <button class="btn-ghost" style="width:100%;margin-top:4px;" onclick="showToast('출시 버전에서 친구를 추가할 수 있습니다')">친구 코드로 추가하기</button>
-    <div class="friend-foot">친구에게는 주간 기록 정도만 보입니다. 체중·식단·메모는 공유되지 않습니다.<br>지금은 데모 화면이며, 실제 연동은 출시 버전에서 작동합니다.</div>`;
+    <div class="ptitle">함께 이어가는 중</div>
+    <div class="psub">서로의 기록을 가볍게 응원해요.</div>
+    <div class="share"><div class="share-info"><div class="share-l">내 친구 코드</div><div class="share-c">${code}</div></div><button class="share-btn" onclick="if(navigator.clipboard)navigator.clipboard.writeText('${code}');toast('코드를 복사했어요')">${ICON.copy}복사</button></div>
+    <div class="friend-list">${rows}</div>
+    <button class="btn-sec" onclick="toast('출시 버전에서 친구를 추가할 수 있습니다')">친구 코드로 추가하기</button>
+    <div class="ffoot">친구에게는 주간 기록 정도만 보입니다.<br>체중·식단·메모는 공유되지 않습니다.</div>
+  `;
 }
 
+/* ═══════════ ALARM ═══════════ */
 function renderAlarm(){
-  const items=state.alarms.map(a=>`<div class="alarm-row">
-    <input class="alarm-time" type="time" value="${a.time}" onchange="updateAlarm(${a.id},{time:this.value})"/>
-    <input class="alarm-name" type="text" value="${(a.label||"").replace(/"/g,"&quot;")}" placeholder="알람 이름" onchange="updateAlarm(${a.id},{label:this.value})"/>
-    <button class="alarm-toggle ${a.enabled?"on":""}" onclick="toggleAlarm(${a.id})">${a.enabled?"ON":"OFF"}</button>
-    <button class="alarm-del" onclick="deleteAlarm(${a.id})" aria-label="삭제">${ICON.trash}</button>
-  </div>`).join("");
-  return `<h2 class="page-title">알람</h2>
-    <p class="page-sub">가장 어려운 시간대에 나만의 응원을 설정하세요.</p>
-    <div class="alarm-list">${items}</div>
-    <button class="btn-ghost" style="width:100%;margin-top:6px;" onclick="addAlarm()">+ 알람 추가</button>
-    <div class="alarm-note">이 화면을 열어둔 상태에서만 알람이 울립니다. 정식 앱에서는 백그라운드 알림이 가능합니다.</div>`;
+  const items=state.alarms.map(a=>`<div class="arow"><input class="atime" type="time" value="${a.time}" onchange="updAlarm(${a.id},{time:this.value})"/><input class="aname" type="text" value="${(a.label||"").replace(/"/g,"&quot;")}" placeholder="알람 이름" onchange="updAlarm(${a.id},{label:this.value})"/><button class="atoggle ${a.on?"on":""}" onclick="togAlarm(${a.id})">${a.on?"ON":"OFF"}</button><button class="adel" onclick="delAlarm(${a.id})">${ICON.trash}</button></div>`).join("");
+  return `<div class="ptitle">알람</div><div class="psub">가장 흔들리기 쉬운 시간대에 나만의 알림을 설정하세요.</div><div class="alarm-list">${items}</div><button class="btn-sec" onclick="addAlarm()">+ 알람 추가</button><div class="anote">이 화면을 열어둔 상태에서 알람이 울립니다. 정식 앱에서는 백그라운드 알림이 가능합니다.</div>`;
 }
-function toggleAlarm(id){const a=state.alarms.find(x=>x.id===id);if(!a.enabled&&"Notification" in window)Notification.requestPermission();updateAlarm(id,{enabled:!a.enabled});}
-function addAlarm(){const newId=Math.max(0,...state.alarms.map(a=>a.id))+1;state.alarms.push({id:newId,label:"새 알람",time:"21:00",enabled:true});saveState();renderContent();}
-function deleteAlarm(id){state.alarms=state.alarms.filter(a=>a.id!==id);saveState();renderContent();}
+function updAlarm(id,f){state.alarms=state.alarms.map(a=>a.id===id?{...a,...f}:a);save();}
+function togAlarm(id){const a=state.alarms.find(x=>x.id===id);if(!a.on&&"Notification" in window)Notification.requestPermission();updAlarm(id,{on:!a.on});render();}
+function addAlarm(){const id=Math.max(0,...state.alarms.map(a=>a.id))+1;state.alarms.push({id,label:"새 알람",time:"21:00",on:true});save();render();}
+function delAlarm(id){state.alarms=state.alarms.filter(a=>a.id!==id);save();render();}
+setInterval(()=>{if(!state)return;const now=new Date();const hm=`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;state.alarms.forEach(a=>{if(!a.on)return;const k=a.id+hm;if(a.time===hm&&!alarmFired[k]){alarmFired[k]=true;if("Notification" in window&&Notification.permission==="granted")new Notification("⏰ "+a.label,{body:a.time});}});if(now.getMinutes()===0)alarmFired={};},30000);
 
-async function doTip(){
-  tipLoading=true;tipData=null;renderContent();
-  const tl=getTodayLog();const streak=getStreak(state.logs);
-  const moodKr={great:"아주좋음",good:"좋음",soso:"보통",down:"우울",stress:"스트레스"};
-  const recent=[...state.logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7).map(l=>({날짜:l.date,체중:l.weight?l.weight+"kg":"미기록",기분:moodKr[l.mood]||"미기록",야식:l.lateNight?"먹음":"없이마감",배달:l.delivery?"먹음":"안함",간식:l.sugar?"많음":"조절",유산소:l.cardio?(l.cardioType||"")+l.cardio+"분":"없음",근력:l.strength?"함":"안함"}));
-  const prompt=`당신은 따뜻하지만 솔직한 다이어트 코치입니다. 사용자: ${state.name}, 목표 ${state.goalW}kg, 연속 회수 ${streak}일.
-최근 기록: ${JSON.stringify(recent)}
-오늘: 체중${tl.weight||"미기록"}kg, 기분${moodKr[tl.mood]||"미기록"}, 야식${tl.lateNight?"먹음":"없이마감"}, 배달${tl.delivery?"먹음":"안함"}, 간식${tl.sugar?"많음":"조절"}, 유산소${tl.cardioType||""}${tl.cardio||"0"}분 ${tl.intensity||""}, 근력${tl.strength?"함":"안함"}, 일기:${tl.note||"없음"}.
-기분과 식습관의 연결(스트레스→야식 등)을 살펴봐 주세요. 기록은 심판이 아니라 패턴 발견 도구입니다. 내일 행동 하나에 집중하세요. 반드시 아래 JSON만 반환 (마크다운 없이):
-{"오늘평가":"한문장 격려","팁1":{"제목":"짧게","내용":"내일 행동 하나 1~2문장"},"팁2":{"제목":"짧게","내용":"1~2문장"},"팁3":{"제목":"짧게","내용":"1~2문장"},"내일한마디":"동기부여 한문장"}`;
-  try{
-    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
-    const d=await res.json();const txt=d.content?.find(c=>c.type==="text")?.text||"";
-    tipData=JSON.parse(txt.replace(/```json|```/g,"").trim());
-  }catch(e){showToast("코칭 생성 오류. 다시 시도해주세요.");}
-  tipLoading=false;renderContent();
-}
-
+/* ═══════════ Boot ═══════════ */
 function boot(){
-  try{
-    state=loadState();
-    if(state && state.logs){ initApp(); }
-    else { renderOB(); }
-  }catch(e){
-    document.getElementById("ob-card").innerHTML='<div style="color:#F87171;font-size:13px;">초기화 오류: '+e.message+'</div>';
-  }
+  try{state=load();if(state&&state.logs)initApp();else renderOB();}
+  catch(e){document.getElementById("onboard").innerHTML='<div style="padding:40px;color:#FF5A36">초기화 오류: '+e.message+'</div>';}
 }
-if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",boot);}else{boot();}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();
 </script>
 </body>
 </html>
