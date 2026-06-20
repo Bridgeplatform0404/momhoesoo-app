@@ -282,7 +282,7 @@ button:active{transform:scale(.97);}
 
 <script>
 const KEY="momhoesu_v3";
-let state=null,tab="home",editDate=null,tipData=null,tipLoading=false,alarmFired={};
+let state=null,tab="home",editDate=null,alarmFired={};
 
 /* ─── Icons ─── */
 function MARK(s,c){s=s||20;c=c||"#fff";return `<svg viewBox="0 0 48 56" width="${s}" height="${s}" fill="${c}"><ellipse cx="24" cy="9" rx="7" ry="7"/><path d="M10 24 C10 19 16 16 24 16 C32 16 38 19 38 24 L36 37 L12 37 Z"/><path d="M12 26 C7 23 3 29 5 35 C6 38 11 39 13 36 L15 28 Z"/><path d="M36 26 C41 23 45 29 43 35 C42 38 37 39 35 36 L33 28 Z"/><rect x="13" y="44" width="9" height="11" rx="4.5"/><rect x="26" y="44" width="9" height="11" rx="4.5"/></svg>`;}
@@ -353,11 +353,9 @@ function renderOB(){
 }
 function startApp(){
   state={name:obName.trim(),startW:parseFloat(obSW),goalW:parseFloat(obGW),startDate:today(),logs:[],
-    isPremium:false,aiUsed:0,aiWeek:weekStart(),
     alarms:[{id:1,label:"기상 + 체중 측정",time:"07:00",on:true},{id:2,label:"저녁 식사 마무리",time:"19:30",on:true},{id:3,label:"주방 닫기·양치",time:"21:00",on:true}]};
   save();initApp();
 }
-function weekStart(){const d=new Date();const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.toISOString().split("T")[0];}
 function initApp(){
   document.getElementById("onboard").style.display="none";
   document.getElementById("app").style.display="block";
@@ -367,7 +365,7 @@ function initApp(){
 }
 
 /* ═══════════ Tabbar ═══════════ */
-const TABS=[["home","오늘",'<ellipse cx="12" cy="9.5" rx="6.2" ry="6.8"/><line x1="12" y1="16.3" x2="12" y2="21.5"/><line x1="9" y1="21.5" x2="15" y2="21.5"/>'],["friends","친구",'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c0-3 2.6-5.2 5.5-5.2s5.5 2.2 5.5 5.2"/><path d="M16.2 5.3a3 3 0 0 1 0 5.9"/>'],["tip","코칭",'<path d="M11 3l1.7 4.3L17 9l-4.3 1.7L11 15l-1.7-4.3L5 9l4.3-1.7z"/>'],["trend","추세",'<polyline points="3 16 9 10 13 14 21 6"/><polyline points="15 6 21 6 21 12"/>'],["log","기록",'<rect x="5" y="4.5" width="14" height="16" rx="2.5"/><line x1="8.5" y1="11.5" x2="15.5" y2="11.5"/><line x1="8.5" y1="15" x2="13" y2="15"/>'],["alarm","알람",'<path d="M6 9.5a6 6 0 0 1 12 0c0 4.8 1.8 6 1.8 6H4.2S6 14.3 6 9.5z"/><path d="M10 19a2 2 0 0 0 4 0"/>']];
+const TABS=[["home","오늘",'<ellipse cx="12" cy="9.5" rx="6.2" ry="6.8"/><line x1="12" y1="16.3" x2="12" y2="21.5"/><line x1="9" y1="21.5" x2="15" y2="21.5"/>'],["friends","친구",'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c0-3 2.6-5.2 5.5-5.2s5.5 2.2 5.5 5.2"/><path d="M16.2 5.3a3 3 0 0 1 0 5.9"/>'],["trend","추세",'<polyline points="3 16 9 10 13 14 21 6"/><polyline points="15 6 21 6 21 12"/>'],["log","기록",'<rect x="5" y="4.5" width="14" height="16" rx="2.5"/><line x1="8.5" y1="11.5" x2="15.5" y2="11.5"/><line x1="8.5" y1="15" x2="13" y2="15"/>'],["alarm","알람",'<path d="M6 9.5a6 6 0 0 1 12 0c0 4.8 1.8 6 1.8 6H4.2S6 14.3 6 9.5z"/><path d="M10 19a2 2 0 0 0 4 0"/>']];
 function renderTabbar(){
   document.getElementById("tabbar").innerHTML=TABS.map(([k,l,p])=>`<button class="tab ${k===tab?"on":""}" onclick="switchTab('${k}')"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg><small>${l}</small></button>`).join("");
 }
@@ -497,90 +495,100 @@ function buildSpark(arr){
 }
 
 /* AI line */
-function apiKey(){return localStorage.getItem("mh_apikey")||"";}
-async function callClaude(messages,maxTokens){
-  const key=apiKey();
-  const headers={"Content-Type":"application/json"};
-  if(key){headers["x-api-key"]=key;headers["anthropic-version"]="2023-06-01";headers["anthropic-dangerous-direct-browser-access"]="true";}
-  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:maxTokens,messages})});
-  if(!res.ok)throw new Error("api "+res.status);
-  return await res.json();
+/* 규칙 기반 한 줄 — AI 없이, 기록을 읽고 격려 (심판 아닌 거울) */
+function ruleLine(l){
+  const done=doneCount(l);
+  const moodKr={great:"아주좋음",good:"좋음",soso:"보통",down:"우울",stress:"스트레스"};
+  const trig=(l.triggers||[]);
+  const st=streak();
+  // 무너진 날에도 열고 싶은 앱 — 0개여도 격려
+  if(done===0){
+    if(l.mood||trig.length||l.note)return "오늘은 흔들렸어도, 기록을 남긴 것 자체가 회수의 시작이에요.";
+    return "체크 하나만 눌러보세요. 완벽하지 않아도 괜찮아요.";
+  }
+  // 스트레스/우울인데 뭔가 지켜냄 — 특별히 인정
+  if((l.mood==="stress"||l.mood==="down")&&done>=2){
+    return `${moodKr[l.mood]}한 날에 ${done}개나 지켜낸 거, 그게 진짜 회복력이에요.`;
+  }
+  // 4/4 완전 회수
+  if(done===4){
+    if(st>=2)return `${st}일 연속 완전 회수! 이 흐름이 곧 몸을 바꿉니다.`;
+    return "오늘 완전 회수 성공. 내일도 이 느낌 그대로 가요.";
+  }
+  // 3/4 — 하나만 더
+  if(done===3){
+    const missing=[];if(l.lateNight!==false)missing.push("야식");if(l.delivery!==false)missing.push("배달");if(l.sugar!==false)missing.push("간식");if(!((l.cardio&&l.cardio!=="0")||l.strength))missing.push("운동");
+    if(missing[0]==="운동")return "거의 다 왔어요. 20분 걷기 하나면 오늘 완전 회수예요.";
+    return `거의 다 왔어요. ${missing[0]} 하나만 더 챙기면 오늘 완전 회수입니다.`;
+  }
+  // 1~2개
+  return `${done}개 회수 중. 지금 이 순간 하나만 더 선택해보세요.`;
 }
 async function refreshAI(){
   const slot=document.getElementById("ai-slot");if(!slot)return;
   const l=getLog(today());
-  if(!apiKey()){slot.innerHTML=`<div class="ai"><div class="ai-head">${ICON.spark}오늘의 한 줄</div><div class="ai-txt" style="font-size:13px;color:var(--txt-2)">AI 코칭을 쓰려면 설정에서 API 키를 등록하세요. 키 없이도 모든 기록 기능은 작동합니다.</div></div>`;return;}
-  slot.innerHTML=`<div class="ai"><div class="ai-head">${ICON.spark}오늘의 한 줄</div><div class="ai-loading">분석 중...</div></div>`;
-  const moodKr={great:"아주좋음",good:"좋음",soso:"보통",down:"우울",stress:"스트레스"};
-  const prompt=`다이어트 코치로서 ${state.name}의 오늘 기록을 보고 딱 한 줄(50자 이내)로 격려+내일 행동 하나를 한국어로. 따옴표·마크다운 없이.
-오늘: 야식${l.lateNight===false?"없이마감":"먹음"}, 배달${l.delivery===false?"안함":"먹음"}, 간식${l.sugar===false?"조절":"많음"}, 운동${(l.cardio&&l.cardio!=="0")||l.strength?"함":"안함"}, 기분${moodKr[l.mood]||"미입력"}, 이유${(l.triggers||[]).join("·")||"없음"}. 연속${streak()}일.`;
-  try{
-    const d=await callClaude([{role:"user",content:prompt}],200);
-    const txt=(d.content?.find(c=>c.type==="text")?.text||"").trim().replace(/^["']|["']$/g,"");
-    if(document.getElementById("ai-slot")&&tab==="home")slot.innerHTML=`<div class="ai"><div class="ai-head">${ICON.spark}오늘의 한 줄</div><div class="ai-txt">${txt}</div><button class="ai-cta" onclick="switchTab('tip');doTip()">자세한 코칭 받기 →</button></div>`;
-  }catch(e){if(document.getElementById("ai-slot"))slot.innerHTML=`<div class="ai"><div class="ai-txt" style="color:var(--txt-2);font-size:13px">한 줄 코칭을 불러오지 못했어요. 설정에서 API 키를 확인해 주세요.</div></div>`;}
+  slot.innerHTML=`<div class="ai"><div class="ai-head">${ICON.spark}오늘의 한 줄</div><div class="ai-txt">${ruleLine(l)}</div></div>`;
 }
 
-/* ═══════════ COACHING ═══════════ */
-function remainAI(){if(state.isPremium)return "무제한";const w=weekStart();if(state.aiWeek!==w){state.aiWeek=w;state.aiUsed=0;save();}return Math.max(0,3-(state.aiUsed||0));}
+/* ═══════════ COACHING — 규칙 기반 "내 패턴" ═══════════ */
 function renderTip(){
-  const badge=state.isPremium?`<span class="coach-badge">무제한</span>`:`<span class="coach-badge">이번 주 ${remainAI()}회</span>`;
-  const head=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 24px 4px"><div class="ptitle" style="padding:0">다음 한 걸음</div>${badge}</div><div class="psub">기분과 식습관의 연결을 보고, 오늘 가장 쉬운 행동 하나를 찾아드립니다.</div>`;
-  // 트리거 인사이트
-  const insight=buildInsight();
-  if(tipLoading)return head+(insight||"")+`<div class="coach-empty"><div>${MARK(42,"var(--ember)")}</div><p>오늘 기록을 천천히 살펴보는 중...</p></div>`;
-  if(tipData){
-    const tips=[tipData.팁1,tipData.팁2,tipData.팁3].filter(Boolean);
-    return head+(insight||"")+`<div class="coach-letter"><p class="cl-lead">${tipData.오늘평가||""}</p>${tips.map(t=>`<div class="cl-act"><div class="cl-act-t">${t.제목||""}</div><div class="cl-act-b">${t.내용||""}</div></div>`).join("")}${tipData.내일한마디?`<p class="cl-close">${tipData.내일한마디}</p>`:""}</div><button class="btn-sec" onclick="doTip()">다시 제안 받기</button>`;
+  const head=`<div class="ptitle">내 패턴</div><div class="psub">기분과 행동을 연결해, 내가 무너지는 지점을 보여드립니다.</div>`;
+  const t=totals();
+  if(t.total<2){
+    return head+`<div class="coach-empty"><div>${MARK(46,"var(--ember)")}</div><p>며칠 기록이 쌓이면<br>나만의 무너짐 패턴이 보이기 시작해요.<br><span style="color:var(--txt-3);font-size:13px">지금은 ${t.total}일 기록됨</span></p></div>`;
   }
-  return head+(insight||"")+`<div class="coach-empty"><div>${MARK(46,"var(--ember)")}</div><p>오늘 기록을 바탕으로<br>가장 부담 없는 행동 하나를 제안해 드릴게요.</p><button class="btn-primary" style="max-width:260px;margin:0" onclick="doTip()">오늘의 제안 받기</button></div>`;
+  let out=head;
+  // 1) 트리거 패턴
+  const trigIns=buildInsight();if(trigIns)out+=trigIns;
+  // 2) 약한 고리 (가장 안 지켜진 항목)
+  const weak=weakestLink();if(weak)out+=weak;
+  // 3) 기분-회수 상관
+  const moodIns=moodInsight();if(moodIns)out+=moodIns;
+  // 4) 이번 주 요약 카드
+  out+=weekSummary();
+  return out;
 }
 function buildInsight(){
-  // 트리거-무너짐 패턴 분석
   const withTrig=state.logs.filter(l=>(l.triggers||[]).length>0);
   if(withTrig.length<3)return "";
   const count={};
-  withTrig.forEach(l=>{const broke=doneCount(l)<4;if(broke)(l.triggers||[]).forEach(t=>count[t]=(count[t]||0)+1);});
+  withTrig.forEach(l=>{if(doneCount(l)<4)(l.triggers||[]).forEach(t=>count[t]=(count[t]||0)+1);});
   const top=Object.entries(count).sort((a,b)=>b[1]-a[1])[0];
   if(!top||top[1]<2)return "";
-  return `<div class="insight"><div class="insight-h">${ICON.spark}발견된 패턴</div><div class="insight-t"><b style="color:var(--mint)">${top[0]}</b> 느낀 날에 회수가 무너지는 경우가 많았어요. 그 순간을 미리 알아채면 절반은 이긴 겁니다.</div></div>`;
+  return `<div class="insight"><div class="insight-h">${ICON.spark}발견된 패턴</div><div class="insight-t"><b style="color:var(--mint)">${top[0]}</b> 느낀 날에 회수가 무너지는 경우가 많았어요(${top[1]}회). 그 순간을 미리 알아채면 절반은 이긴 겁니다.</div></div>`;
 }
-async function doTip(){
-  if(!apiKey()){toast("설정에서 API 키를 먼저 등록하세요");openSettings();return;}
-  if(!state.isPremium&&remainAI()<=0){toast("이번 주 무료 코칭을 다 썼어요");return;}
-  if(!state.isPremium){state.aiUsed=(state.aiUsed||0)+1;save();}
-  tipLoading=true;tipData=null;render();
-  const moodKr={great:"아주좋음",good:"좋음",soso:"보통",down:"우울",stress:"스트레스"};
-  const recent=[...state.logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7).map(l=>({날짜:l.date,기분:moodKr[l.mood]||"미입력",이유:(l.triggers||[]).join("·")||"없음",야식:l.lateNight===false?"마감":"먹음",배달:l.delivery===false?"안함":"먹음",간식:l.sugar===false?"조절":"많음",운동:(l.cardio&&l.cardio!=="0")||l.strength?"함":"안함",메모:l.note||""}));
-  const prompt=`당신은 따뜻하지만 솔직한 다이어트 코치입니다. 사용자 ${state.name}, 목표 ${state.goalW}kg, 연속 ${streak()}일.
-최근 기록: ${JSON.stringify(recent)}
-기분과 식습관의 연결(스트레스→야식 등)을 살펴봐 주세요. 기록은 심판이 아니라 패턴 발견 도구입니다. 내일 행동 하나에 집중. 반드시 아래 JSON만 (마크다운 없이):
-{"오늘평가":"한문장 격려","팁1":{"제목":"짧게","내용":"내일 행동 하나"},"팁2":{"제목":"짧게","내용":"1~2문장"},"팁3":{"제목":"짧게","내용":"1~2문장"},"내일한마디":"동기부여 한문장"}`;
-  try{
-    const d=await callClaude([{role:"user",content:prompt}],1000);
-    const txt=d.content?.find(c=>c.type==="text")?.text||"";
-    tipData=JSON.parse(txt.replace(/```json|```/g,"").trim());
-  }catch(e){toast("코칭 생성 오류 — API 키 확인");}
-  tipLoading=false;render();
+function weakestLink(){
+  const t=totals();if(t.total<3)return "";
+  const items=[["야식 참기",t.nights,"늦은 시간 주방을 미리 닫아두면 도움이 돼요"],["배달 줄이기",t.deliv,"배달 앱 알림을 꺼두는 것만으로 충동이 줄어요"],["간식 조절",t.snack,"눈에 보이는 곳에서 간식을 치워보세요"],["운동",t.workout,"10분 걷기부터 — 시작이 가장 어려운 법이에요"]];
+  items.sort((a,b)=>a[1]-b[1]);
+  const [name,cnt,tip]=items[0];const rate=Math.round(cnt/t.total*100);
+  if(rate>=70)return "";
+  return `<div class="card" style="margin:0 24px 12px"><div style="font-size:12px;font-weight:700;color:var(--ember);letter-spacing:0.04em;margin-bottom:9px;display:flex;align-items:center;gap:5px">${ICON.spark}가장 약한 고리</div><div style="font-size:15px;font-weight:650;margin-bottom:5px"><b style="color:var(--ember)">${name}</b>가 ${rate}%로 가장 흔들려요</div><div style="font-size:13px;color:var(--txt-2);line-height:1.6">${tip}</div></div>`;
+}
+function moodInsight(){
+  const withMood=state.logs.filter(l=>l.mood);
+  if(withMood.length<4)return "";
+  const good=withMood.filter(l=>l.mood==="great"||l.mood==="good");
+  const bad=withMood.filter(l=>l.mood==="stress"||l.mood==="down");
+  if(good.length<2||bad.length<2)return "";
+  const gr=Math.round(good.reduce((s,l)=>s+doneCount(l),0)/good.length/4*100);
+  const br=Math.round(bad.reduce((s,l)=>s+doneCount(l),0)/bad.length/4*100);
+  if(gr-br<15)return "";
+  return `<div class="card" style="margin:0 24px 12px"><div style="font-size:12px;font-weight:700;color:var(--mint);letter-spacing:0.04em;margin-bottom:12px;display:flex;align-items:center;gap:5px">${ICON.spark}기분과 회수의 관계</div><div style="display:flex;gap:10px"><div style="flex:1;text-align:center;background:var(--mint-glow);border-radius:var(--r-md);padding:14px 8px"><div style="font-size:24px;font-weight:800;color:var(--mint)">${gr}%</div><div style="font-size:11px;color:var(--txt-2);margin-top:4px">기분 좋은 날</div></div><div style="flex:1;text-align:center;background:var(--ember-glow);border-radius:var(--r-md);padding:14px 8px"><div style="font-size:24px;font-weight:800;color:var(--ember)">${br}%</div><div style="font-size:11px;color:var(--txt-2);margin-top:4px">힘든 날</div></div></div><div style="font-size:13px;color:var(--txt-2);line-height:1.6;margin-top:14px">기분이 안 좋은 날 회수율이 ${gr-br}%p 떨어져요. 힘든 날일수록 <b style="color:var(--txt)">딱 하나만</b> 지키자는 마음이면 충분해요.</div></div>`;
+}
+function weekSummary(){
+  const t=totals(),wr=weeklyRate(),st=streak();
+  return `<div class="sec-lbl">이번 주 회수</div><div class="card" style="margin:0 24px 12px"><div style="font-size:14px;color:var(--txt-2);line-height:1.8">완전 회수 <b style="color:var(--mint)">${t.full}</b>일 · 연속 <b style="color:var(--ember)">${st}</b>일 · 이번 주 <b>${wr}%</b><br><span style="font-size:13px;color:var(--txt-3)">기록은 심판이 아니라, 나를 비추는 거울이에요.</span></div></div>`;
 }
 
 /* ═══════════ Settings ═══════════ */
 function openSettings(){
   const ov=document.createElement("div");ov.id="settings";
   ov.style.cssText="position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;justify-content:center;";
-  const hasKey=!!apiKey();
   ov.innerHTML=`
     <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6)" onclick="closeSettings()"></div>
     <div style="position:relative;width:100%;max-width:430px;background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:26px 24px calc(26px + env(safe-area-inset-bottom));max-height:90dvh;overflow-y:auto">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><div style="font-size:20px;font-weight:780">설정</div><button onclick="closeSettings()" style="color:var(--txt-3)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div>
-
-      <div class="sec-lbl" style="padding:0 0 8px">AI 코칭 (선택)</div>
-      <div class="card" style="margin:0 0 18px">
-        <div style="font-size:13px;color:var(--txt-2);line-height:1.6;margin-bottom:12px">AI 코칭을 쓰려면 Anthropic API 키를 등록하세요. 키는 이 기기에만 저장되며 서버로 전송되지 않습니다. ${hasKey?'<b style="color:var(--mint)">현재 등록됨 ✓</b>':""}</div>
-        <input id="apikey-in" type="password" placeholder="sk-ant-..." value="${apiKey()}" style="width:100%;background:var(--surface-up);border:1px solid var(--line-hi);border-radius:var(--r-md);color:var(--txt);font-size:13px;padding:12px 14px;outline:none;margin-bottom:10px"/>
-        <button class="btn-primary" style="margin:0;width:100%;min-height:46px;font-size:14px" onclick="saveKey()">키 저장</button>
-        <a href="https://console.anthropic.com/settings/keys" target="_blank" style="display:block;text-align:center;font-size:12px;color:var(--txt-3);margin-top:10px;text-decoration:none">API 키 발급받기 →</a>
-      </div>
 
       <div class="sec-lbl" style="padding:0 0 8px">데이터 백업</div>
       <div class="card" style="margin:0 0 18px">
@@ -600,7 +608,6 @@ function openSettings(){
   document.body.appendChild(ov);
 }
 function closeSettings(){document.getElementById("settings")?.remove();}
-function saveKey(){const v=document.getElementById("apikey-in").value.trim();if(v)localStorage.setItem("mh_apikey",v);else localStorage.removeItem("mh_apikey");toast("저장됐습니다");closeSettings();if(tab==="home")refreshAI();}
 function exportData(){
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);const a=document.createElement("a");
