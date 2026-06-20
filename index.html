@@ -609,9 +609,45 @@ function importData(input){
   reader.onload=e=>{try{const data=JSON.parse(e.target.result);if(data.logs&&data.name){state=data;save();closeSettings();switchTab("home");toast("기록을 복원했어요");}else toast("올바른 백업 파일이 아닙니다");}catch{toast("파일을 읽을 수 없습니다");}};
   reader.readAsText(file);
 }
+let cardioTmp=45;
 function customCardio(){
-  const v=prompt("유산소 운동 시간(분)을 입력하세요");
-  if(v&&!isNaN(v)&&parseInt(v)>0){setLog(activeDate(),{cardio:String(parseInt(v))});render();}
+  const cur=getLog(activeDate()).cardio;
+  cardioTmp=(cur&&!isNaN(cur)&&parseInt(cur)>0)?parseInt(cur):45;
+  const ov=document.createElement("div");ov.id="cardio-modal";
+  ov.style.cssText="position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;justify-content:center";
+  ov.innerHTML=`
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6)" onclick="closeCardio()"></div>
+    <div style="position:relative;width:100%;max-width:430px;background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:26px 24px calc(28px + env(safe-area-inset-bottom))">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:19px;font-weight:780">유산소 운동 시간</div>
+        <button onclick="closeCardio()" style="color:var(--txt-3)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+      </div>
+      <div style="font-size:13px;color:var(--txt-2);margin-bottom:24px">오늘 몇 분 움직였나요?</div>
+
+      <div style="display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:24px">
+        <button onclick="stepCardio(-5)" style="width:52px;height:52px;border-radius:50%;background:var(--surface-up);border:1px solid var(--line-hi);color:var(--txt);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
+        <div style="display:flex;align-items:baseline;gap:6px;min-width:140px;justify-content:center">
+          <input id="cardio-val" type="number" inputmode="numeric" value="${cardioTmp}" oninput="cardioTmp=parseInt(this.value)||0" style="width:auto;max-width:110px;background:transparent;border:none;color:var(--ember);font-size:56px;font-weight:800;letter-spacing:-0.04em;text-align:right;outline:none;font-variant-numeric:tabular-nums"/>
+          <span style="font-size:18px;color:var(--txt-2);font-weight:600">분</span>
+        </div>
+        <button onclick="stepCardio(5)" style="width:52px;height:52px;border-radius:50%;background:var(--surface-up);border:1px solid var(--line-hi);color:var(--txt);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:22px">
+        ${[15,45,50,75,90].map(v=>`<button onclick="setCardioVal(${v})" style="flex:1;padding:10px 0;border-radius:var(--r-md);background:var(--surface-up);border:1px solid var(--line);color:var(--txt-2);font-size:13px;font-weight:550">${v}분</button>`).join("")}
+      </div>
+
+      <button class="btn-primary" style="margin:0;width:100%" onclick="confirmCardio()">이 시간으로 기록</button>
+    </div>`;
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>{const i=document.getElementById("cardio-val");if(i){i.focus();i.select();}});
+}
+function stepCardio(d){cardioTmp=Math.max(0,cardioTmp+d);document.getElementById("cardio-val").value=cardioTmp;}
+function setCardioVal(v){cardioTmp=v;document.getElementById("cardio-val").value=v;}
+function closeCardio(){document.getElementById("cardio-modal")?.remove();}
+function confirmCardio(){
+  if(cardioTmp>0){setLog(activeDate(),{cardio:String(cardioTmp)});closeCardio();render();toast(`유산소 ${cardioTmp}분 기록`);}
+  else{setLog(activeDate(),{cardio:"0"});closeCardio();render();}
 }
 
 /* ═══════════ TREND ═══════════ */
