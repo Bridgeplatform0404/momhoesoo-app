@@ -114,6 +114,10 @@ button:active{transform:scale(.97);}
 .trig.on{background:var(--ember-glow);border-color:var(--ember);color:var(--ember);font-weight:650;}
 .note-ta{width:100%;background:var(--surface-up);border:1px solid var(--line);border-radius:var(--r-md);color:var(--txt);font-size:14px;padding:13px 15px;outline:none;resize:none;min-height:72px;line-height:1.6;display:block;}
 .note-ta:focus{border-color:var(--line-hi);}
+/* 유산소: 한 줄 균등 배치 */
+.cardio-row{display:flex;gap:6px;margin-bottom:16px;}
+.cardio-row .trig{flex:1;padding:9px 0;text-align:center;display:flex;align-items:center;justify-content:center;}
+.cardio-row .trig.plus{flex:0 0 auto;width:42px;}
 
 /* ── Weight ── */
 .wtop{display:flex;justify-content:space-between;align-items:center;}
@@ -444,7 +448,7 @@ function renderHome(){
     <div class="sec-lbl">운동 상세</div>
     <div class="card">
       <div class="trig-lbl">유산소 시간</div>
-      <div class="trig-row">${["0","20","30","40","60"].map(v=>`<button class="trig ${l.cardio===v?"on":""}" onclick="setLog(activeDate(),{cardio:'${v}'});render()">${v==="0"?"쉼":v+"분"}</button>`).join("")}${(l.cardio&&!["0","20","30","40","60"].includes(l.cardio))?`<button class="trig on" onclick="setLog(activeDate(),{cardio:'0'});render()">${l.cardio}분</button>`:`<button class="trig" onclick="customCardio()" style="padding:8px 12px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>`}</div>
+      <div class="cardio-row">${["0","20","30","40","60"].map(v=>`<button class="trig ${l.cardio===v?"on":""}" onclick="setLog(activeDate(),{cardio:'${v}'});render()">${v==="0"?"쉼":v+"분"}</button>`).join("")}${(l.cardio&&!["0","20","30","40","60"].includes(l.cardio))?`<button class="trig on" onclick="customCardio()">${l.cardio}분</button>`:`<button class="trig plus" onclick="customCardio()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>`}</div>
       <div class="trig-lbl">근력 운동</div>
       <div class="trig-row"><button class="trig ${!l.strength?"on":""}" onclick="setLog(activeDate(),{strength:false});render()">안 함</button><button class="trig ${l.strength?"on":""}" onclick="setLog(activeDate(),{strength:true});render()">했다</button></div>
     </div>
